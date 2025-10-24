@@ -1,0 +1,138 @@
+{
+  "name": "Agente Matriz Muebles",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "nombre"
+            },
+            {
+              "name": "medidas"
+            },
+            {
+              "name": "material"
+            },
+            {
+              "name": "color"
+            },
+            {
+              "name": "presupuesto_max"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9fc2e47f-dd35-43a8-8447-1c6872746347",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Zi-ZRPaiOOr-FYTtDXOWOqIZpAzvblEjQPQmevqQyP8",
+          "mode": "list",
+          "cachedResultName": "Hoja de cálculo sin título",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Zi-ZRPaiOOr-FYTtDXOWOqIZpAzvblEjQPQmevqQyP8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Zi-ZRPaiOOr-FYTtDXOWOqIZpAzvblEjQPQmevqQyP8/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "tipo",
+              "lookupValue": "={{ $json.nombre }}"
+            },
+            {
+              "lookupColumn": "medidas",
+              "lookupValue": "={{ $json.medidas }}"
+            },
+            {
+              "lookupColumn": "material",
+              "lookupValue": "={{ $json.material }}"
+            },
+            {
+              "lookupColumn": "color",
+              "lookupValue": "={{ $json.color }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "95774d82-1500-408f-9d24-6fb2467387cb",
+      "name": "Filtrar Muebles",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEKAszLXB8UGpU6O",
+          "name": "Google Sheets Alejandro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lee el presupuesto del otro nodo (ajusta el nombre si es distinto)\nconst rawPresu =\n  $('When Executed by Another Workflow').first().json.presupuesto_max;\n\n// Convierte \"70€\", \"70\", \"70,00\", \"1.299,50 €\" -> número JS\nfunction parseEuro(v) {\n  if (v == null) return NaN;\n  let s = String(v).trim();\n  // quita símbolos y espacios\n  s = s.replace(/[^\\d.,-]/g, '');\n  // si hay separadores de miles con punto (1.299,50) -> quita puntos\n  if (s.includes(',') && s.includes('.')) s = s.replace(/\\./g, '');\n  // último separador decimal a punto\n  const lastComma = s.lastIndexOf(',');\n  if (lastComma !== -1) s = s.slice(0, lastComma).replace(/,/g, '') + '.' + s.slice(lastComma + 1);\n  return parseFloat(s);\n}\n\nconst max = parseEuro(rawPresu);\n\n// cuántos resultados devolver (opcional)\nconst limit = 10;\n\nconst out = $input.all()\n  .filter(i => {\n    const p = parseEuro(i.json.precio);\n    // si no hay presupuesto, no filtramos\n    if (!Number.isFinite(max)) return true;\n    return Number.isFinite(p) && p <= max;\n  })\n  // ordena por precio ascendente\n  .sort((a, b) => parseEuro(a.json.precio) - parseEuro(b.json.precio))\n  .slice(0, limit);\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "91ecb8c8-70b9-420f-ae64-7282743c2bea",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Muebles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Muebles": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "890e2e1f-aa9d-47d6-afad-b77cb9174b04",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3dd0af70a31fe5617d636be48f186b0cb1837a8d7591f999710c930aa934cdeb"
+  },
+  "id": "uv4yyqJZB2h4SQ0q",
+  "tags": []
+}

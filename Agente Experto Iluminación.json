@@ -1,0 +1,419 @@
+{
+  "name": "Agente Experto Iluminación",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "telefono"
+            },
+            {
+              "name": "mensaje"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -560,
+        -224
+      ],
+      "id": "18ce1ef0-e77f-44ce-80f4-3623e0d813e1",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When Executed by Another Workflow').item.json.mensaje }}",
+        "options": {
+          "systemMessage": "=# Rol\n\nEres el Agente Experto en Limpieza de HogarNexo. Atiendes solo consultas de productos de limpieza (multiusos, desinfectantes, detergentes, quitagrasas, limpia baños, cristales, suelos, lavadoras, lavavajillas, robots/aspiradores como categoría de limpieza). Recomiendas opciones y resuelves dudas con tono cercano y claro.\n\n# Objetivo\n\n- Diagnosticar con 4 preguntas clave (solo las que falten).\n\n- Buscar en el catálogo interno y proponer 2–3 opciones coherentes.\n\n- Aclarar o ampliar con información técnica vía RAG cuando te lo pidan.\n\n- Ceder si el tema no es de Muebles.\n\n# Las 3 preguntas (obligatorias; no repitas lo ya dicho)\n\n1. ¿Qué necesitas limpiar o qué problema hay? (cocina/grasa, baño/cal, suelo/manchas, ropa/blanqueo, cristales, desinfección, olores…).\n\n2. Superficie/material afectado (madera, acero, vitro, mármol, azulejo, textil, piel, etc.).\n\n3. Preferencias: fragancia/neutro, ecológico/hipoalergénico, con/sin lejía, formato (spray, gel, polvo, cápsulas).\n\nSi ya dieron parte de esto, pregunta solo lo que falte y confirma en 1 línea.\n\n# Proceso\n\n- Faltan datos → pregunta breve (1–2 líneas) hasta completar las 3.\n\n- Con las 3 → devuelve 2–3 opciones con: nombre, uso/superficie, rendimiento/dilución, pH/seguridad (si aplica), precio aprox., disponibilidad y siguiente paso (“¿te lo reservo?”, “¿te envío instrucciones de uso?”).\n\n- Detalle fino (p. ej., compatibilidad con mármol/niños/mascotas) → consulta RAG y responde preciso.\n\n**Evita abrumar: respuestas cortas, listas limpias, pasos claros.**\n\n# Herramientas (nombres de ejemplo)\n\nCATALOGO_BUSCAR: filtra por problema/uso, superficie, preferencias (eco/fragancia/formato), presupuesto.\n\nRAG_INFO: ficha técnica (pH, dilución, compatibilidades, seguridad, rendimiento) por producto_id o nombre.\n\n# Estilo\n\nEspañol neutro, cercano, profesional.\n\nFrases cortas. Sin prometer stock/fechas exactas si no las verificas.\n\n# Delegar (cuándo y cómo)\n\nSi detectas con claridad que el cliente habla de otro nicho (no Limpieza), no respondas al cliente y devuelve únicamente la palabra exacta del nicho (sin puntos, sin emojis, sin texto extra):\n\nCocina | Muebles | Iluminación\n\nSi no estás 100% seguro, lanza una micro-pregunta (1 línea) para confirmar el destino antes de delegar:\n\nTras confirmación, en el siguiente turno devuelve solo la palabra confirmada."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -368,
+        -224
+      ],
+      "id": "e2fddc8c-895a-46e7-9e80-cd57f0affab3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "gpt-5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -368,
+        128
+      ],
+      "id": "5e3e37bc-3823-4edb-b9f5-774e9e26462b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "rO7izYzCrINKAB8D",
+          "name": "OpenAI Alejandro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When Executed by Another Workflow').item.json.telefono }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -272,
+        -16
+      ],
+      "id": "21791af1-69a5-438b-8ed9-50cc0367e511",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "wjilHqr19rzSbYkK",
+          "name": "Postgres AISA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ea4e9239-8874-4c68-9cd3-c3e4e9154286",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Muebles",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "e0bd2e3a-fb44-4466-a9d8-c9c8187d13e3",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Cocina",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "11057604-f088-4ab4-a8c9-1396cb4f84f5",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Iluminación",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "8c03163b-0c6c-4491-91b6-47a0e34ef2d7",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Limpieza",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "ef238806-acda-4052-b83c-b4212e6da22b",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Cierre",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        -224
+      ],
+      "id": "dd0ddb0a-bc09-4b49-9e30-f385989c7abc",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution-api.savesyncai.com/message/sendText/Alejandro",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "4E06BF7E4A2D-49E5-AD5F-4BE3E38C9B4F"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('When Executed by Another Workflow').item.json.telefono }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -112
+      ],
+      "id": "f12102ff-06e6-46a5-9f47-72e23edac8e3",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs",
+          "mode": "list",
+          "cachedResultName": "Arquitectura MultiAgente",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $('When Executed by Another Workflow').item.json.telefono }}",
+            "agente_asignado": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "telefono"
+          ],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "agente_asignado",
+              "displayName": "agente_asignado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        240,
+        -336
+      ],
+      "id": "bd21d723-a509-4393-afc5-fdd944d5ed4e",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEKAszLXB8UGpU6O",
+          "name": "Google Sheets Alejandro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "UY9bKztrKMQtMzZC",
+          "mode": "list",
+          "cachedResultName": "Agente Principal"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $('When Executed by Another Workflow').item.json.telefono }}",
+            "mensaje": "={{ $('When Executed by Another Workflow').item.json.mensaje }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        -336
+      ],
+      "id": "51667a45-8aa1-4386-b8f7-5ebc090b93d0",
+      "name": "Execute Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6d7823b8-feb8-480d-92db-df81396bd7e0",
+  "meta": {
+    "instanceId": "3dd0af70a31fe5617d636be48f186b0cb1837a8d7591f999710c930aa934cdeb"
+  },
+  "id": "NObA6XMGMqDk6WHk",
+  "tags": []
+}

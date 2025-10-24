@@ -1,0 +1,1247 @@
+{
+  "name": "Agente Principal",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3c759278-5d40-4d24-9fe5-0e9efb2f0f18",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2096,
+        128
+      ],
+      "id": "05b227d9-cf75-456c-9265-15e7f502e83b",
+      "name": "Webhook",
+      "webhookId": "3c759278-5d40-4d24-9fe5-0e9efb2f0f18"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Seteador').item.json.mensaje }}",
+        "options": {
+          "systemMessage": "=# ROL\n\nEres el Agente Principal de HogarNexo: la primera cara que atiende a cada cliente; conversas de forma clara y cercana, entiendes la intención y, cuando el asunto pertenece a un nicho específico (Cocina, Limpieza, Muebles o Iluminación), actúas como orquestador y cedes la conversación al especialista adecuado; si el tema es general, continúas tú la interacción.\n\nObjetivo\nEres el Agente Principal. Recibes y saludas, mantienes conversación básica y decides a qué especialista derivar cuando el tema sea claro. Si derivas, no hablas al cliente: solo devuelves el nombre del agente.\n\nNichos de producto y Agentes Expertos:\n\n\"Cocina\" (utensilios, ollas, sartenes, pequeños electrodomésticos de cocina)\n\n\"Limpieza\" (detergentes, accesorios, aspiradores/robots como limpieza)\n\n\"Muebles\" (sofás, mesas, sillas, colchones, almacenaje)\n\n\"Iluminación\" (lámparas, bombillas, tiras LED, apliques)\n\nNo inventes precios, stock ni políticas.\n\nUsa la memoria de 15–20 mensajes para entender intención.\n\n# Casos para derivar\n\nSi hay señal clara de nicho → transferir en silencio al especialista.\n\nSi hay ambigüedad → micro-pregunta (1 línea) para confirmar, sin asignar aún.\n\nSi detectas cambio de tema: claro → transferir; dudoso → micro-pregunta.\n\nSi hay cierre (“gracias”, “eso es todo”) → di \"Cierre\" para liberar asignación.\n\nSeñales de redirección (guía rápida)\nCocina: olla, sartén, batidora, microondas, freidora, utensilios, cocina, productos de cocina, todo o que tenga que ver con la cocina.\n\nLimpieza: detergente, desinfectante, mopa, escoba, aspirador, robot, limpiar, todo lo que tenga que ver con la limpieza.\n\nMuebles: sofá, mesa, silla, armario, estantería, colchón, canapé, todo lo que tenga que ver con los muebles.\n\nIluminación: lámpara, bombilla, LED, aplique, foco, tira LED, luz, todo lo que tenga que ver con la iluminación.\n\n**Importante no le digas al cliente que eres un agente orquestador ni que transfieres la conversacion ni nada, solo remitete a hablar con el cliente. \n\nTampoco le preguntes que nicho necesita, si te saluda le dices que que necesita o en que puedes ayudarle y ya.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -16,
+        -448
+      ],
+      "id": "2d66a81b-dd4f-4b79-991a-349a7eb30499",
+      "name": "Agente principal"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "gpt-5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        -128
+      ],
+      "id": "4d155098-403c-47eb-af83-35871d5f6101",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "rO7izYzCrINKAB8D",
+          "name": "OpenAI Alejandro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Seteador').first().json.telefono }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        -240
+      ],
+      "id": "fe39082b-a305-47de-960b-aafb2647e671",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "wjilHqr19rzSbYkK",
+          "name": "Postgres AISA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.destino || $json.agente_asignado }}",
+                    "rightValue": "Muebles",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "77d0585c-8fcf-46fb-bd2e-e7218dbc19da"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c19583e8-cb8d-4f95-8d7c-08406747b6d1",
+                    "leftValue": "={{ $json.destino || $json.agente_asignado }}",
+                    "rightValue": "Cocina",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "70a07afd-ef73-495f-998b-cd7dcfdebbe4",
+                    "leftValue": "={{ $json.destino || $json.agente_asignado }}",
+                    "rightValue": "Limpieza",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4456a5fb-9028-4f8e-8de1-8cdf007bd270",
+                    "leftValue": "={{ $json.destino || $json.agente_asignado }}",
+                    "rightValue": "Iluminación",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "97345741-5ffc-4f4c-860d-f7ef1e5aa4ca",
+                    "leftValue": "={{ $json.destino || $json.agente_asignado }}",
+                    "rightValue": "Cierre",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1984,
+        -48
+      ],
+      "id": "312be8ef-3fef-4553-baaa-cbf094b91b0d",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6501c7c8-757b-4b39-994b-96167d055873",
+              "name": "telefono",
+              "value": "={{ $json.telefono }}",
+              "type": "string"
+            },
+            {
+              "id": "3cf3c0fa-19e6-4d97-9e8b-eaa19f1fb05b",
+              "name": "mensaje",
+              "value": "={{ $json.mensaje }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1632,
+        0
+      ],
+      "id": "f06185e5-3e6a-4e42-940a-ce2930d4fdd1",
+      "name": "Seteador"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code — solo con agente_asignado\nconst allowed = [\"Cocina\",\"Limpieza\",\"Muebles\",\"Iluminación\"];\n\nconst asignado = $input.first().json.agente_asignado || \"\";\n\nconst destino = allowed.includes(asignado) ? asignado : \"principal\";\n\nreturn [{ json: { destino } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        0
+      ],
+      "id": "85eea1ac-a67b-47c1-883f-d4dcb9c097b8",
+      "name": "Evaluador"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs",
+          "mode": "list",
+          "cachedResultName": "Arquitectura MultiAgente",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "telefono",
+              "lookupValue": "={{ $json.telefono }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -1152,
+        -16
+      ],
+      "id": "60354699-4260-4e47-bd58-3f6a9aba9d7c",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEKAszLXB8UGpU6O",
+          "name": "Google Sheets Alejandro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "BdvANrliifUIM97L"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $('Seteador').first().json.telefono }}",
+            "mensaje": "={{ $('Seteador').first().json.mensaje }}"
+          },
+          "matchingColumns": [
+            ""
+          ],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2448,
+        -384
+      ],
+      "id": "8794b52f-b68a-407b-abdd-8f5c3e7a1575",
+      "name": "Experto Muebles"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "CCsFflinwKicouMi",
+          "mode": "list",
+          "cachedResultName": "Agente Experto Cocina"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2448,
+        -192
+      ],
+      "id": "9bae03e8-ba8a-4c87-8640-6efc15803c29",
+      "name": "Experto Cocina"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs",
+          "mode": "list",
+          "cachedResultName": "Arquitectura MultiAgente",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $('Seteador').item.json.telefono }}",
+            "agente_asignado": "principal"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "agente_asignado",
+              "displayName": "agente_asignado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -512,
+        -448
+      ],
+      "id": "1784c5cd-1aed-4ede-b922-e666f143746c",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEKAszLXB8UGpU6O",
+          "name": "Google Sheets Alejandro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ea4e9239-8874-4c68-9cd3-c3e4e9154286",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Muebles",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "e0bd2e3a-fb44-4466-a9d8-c9c8187d13e3",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Cocina",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "11057604-f088-4ab4-a8c9-1396cb4f84f5",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Iluminación",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "8c03163b-0c6c-4491-91b6-47a0e34ef2d7",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Limpieza",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "ef238806-acda-4052-b83c-b4212e6da22b",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Cierre",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        -448
+      ],
+      "id": "8f0f1493-44cc-4dde-849b-31f0ecaca98b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution-api.savesyncai.com/message/sendText/Alejandro",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "4E06BF7E4A2D-49E5-AD5F-4BE3E38C9B4F"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"number\": \"{{ $('Webhook').first().json.body.data.key.remoteJid }}\",\n    \"text\": \"{{ $json.output }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -192
+      ],
+      "id": "33b58812-298d-415e-9945-e06e7b25f6a0",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xq8znqxDu82yFggL",
+          "mode": "list",
+          "cachedResultName": "Agente Experto Limpieza"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $('Seteador').first().json.telefono }}",
+            "mensaje": "={{ $('Seteador').first().json.mensaje }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2448,
+        0
+      ],
+      "id": "f2509a7c-cfd3-4f56-9dca-926a3fc8f527",
+      "name": "Experto Limpieza"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "NObA6XMGMqDk6WHk",
+          "mode": "list",
+          "cachedResultName": "Agente Experto Iluminación"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2448,
+        208
+      ],
+      "id": "29d4beb4-828c-4690-bd39-12e7c69278c7",
+      "name": "Experto Iluminación"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a6139061-878e-46e6-b907-7a5e6fb200e3",
+              "leftValue": "={{ $json.telefono }}",
+              "rightValue": "34601376169@s.whatsapp.net",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1408,
+        0
+      ],
+      "id": "83a08099-cc11-451e-ae20-876191988242",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs",
+          "mode": "list",
+          "cachedResultName": "Arquitectura MultiAgente",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 0,
+            "telefono": "={{ $('Seteador').item.json.telefono }}",
+            "agente_asignado": "={{ $('Agente principal').item.json.output }}"
+          },
+          "matchingColumns": [
+            "telefono"
+          ],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "agente_asignado",
+              "displayName": "agente_asignado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        720,
+        -464
+      ],
+      "id": "335b8847-818b-4aa1-b513-cd8250709516",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEKAszLXB8UGpU6O",
+          "name": "Google Sheets Alejandro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1a16ec7d-860d-42c6-ac42-b45d4b7c7406",
+              "leftValue": "={{ $json.row_number }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -896,
+        -16
+      ],
+      "id": "766587b7-e161-43bd-ad36-128755d35dff",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "379b957f-f8d3-475b-b68d-12144047ce74",
+              "leftValue": "={{ $json.destino }}",
+              "rightValue": "principal",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        0
+      ],
+      "id": "69434748-c6d4-4ae9-8471-019547ae759a",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs",
+          "mode": "list",
+          "cachedResultName": "Arquitectura MultiAgente",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CoiTdxiXgvTDQetBKzcNbIQynT-W2iFuOZ3i21GMBBs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [
+            "telefono"
+          ],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "agente_asignado",
+              "displayName": "agente_asignado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delegar",
+              "displayName": "delegar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sugerencia",
+              "displayName": "sugerencia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2448,
+        416
+      ],
+      "id": "fd5c2ccb-6c18-480b-b94b-454558f0c6a9",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEKAszLXB8UGpU6O",
+          "name": "Google Sheets Alejandro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "telefono"
+            },
+            {
+              "name": "mensaje"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1888,
+        -112
+      ],
+      "id": "50b2ed20-69e0-45d8-909c-787522187952",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "76e2fabc-936d-4031-8d36-50f04ca194d8",
+              "name": "telefono",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "0a03f338-09b0-4519-a1a9-f3d2cb8acd16",
+              "name": "mensaje",
+              "value": "={{ $json.body.data.message.conversation }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1888,
+        128
+      ],
+      "id": "d29178d0-82a1-421f-a722-e6ad1c5a3dd4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ (\n  { \n    Cocina: 'CCsFflinwKicouMi',\n    Limpieza: 'xq8znqxDu82yFggL',\n    Muebles: 'BdvANrliifUIM97L',\n    'Iluminación': 'NObA6XMGMqDk6WHk'\n  }\n)[ $json.destino ?? $json.agente_asignado ] || '' }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $('Seteador').first().json.telefono }}",
+            "mensaje": "={{ $('Seteador').first().json.mensaje }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        16
+      ],
+      "id": "200b53f4-3197-475f-b592-c3153979d60e",
+      "name": "Agente Experto"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente principal",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente principal",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Experto Muebles",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Experto Cocina",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Experto Limpieza",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Experto Iluminación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seteador": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluador": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente principal": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Agente principal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Agente Experto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Evaluador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Agente principal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente Experto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Seteador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Seteador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f9e1fb4d-52e9-4d1e-9821-2bd1c529b736",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3dd0af70a31fe5617d636be48f186b0cb1837a8d7591f999710c930aa934cdeb"
+  },
+  "id": "UY9bKztrKMQtMzZC",
+  "tags": []
+}
