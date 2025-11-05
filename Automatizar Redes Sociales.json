@@ -1,0 +1,1418 @@
+{
+  "name": "Automatizar Redes Sociales",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json.URL }}",
+        "options": {}
+      },
+      "id": "cd9afb8e-a043-457e-8962-b4c5fd25a0e4",
+      "name": "Descargar HTML",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -416,
+        48
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.URL }}",
+                    "rightValue": "https://www.youtube.com/",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notContains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "URL Noticia"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bb04e04c-6d30-4e5c-80b2-90f2984da1b1",
+                    "leftValue": "={{ $json.URL }}",
+                    "rightValue": "https://www.youtube.com/",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "URL YouTube"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -720,
+        272
+      ],
+      "id": "75853d24-6384-4591-b129-69af7155d797",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.content }}"
+            },
+            {
+              "content": "=# Rol del Modelo  \nEres un creador de contenido experto en tecnología y automatización con inteligencia artificial. Trabajas para Víctor Pérez, fundador de vystral.com. Tu tarea es transformar una noticia o transcripción sobre tecnología e inteligencia artificial en un post para LinkedIn, utilizando un estilo directo, profesional y cercano, que refleje el liderazgo y visión innovadora de vystral.com.\n\n# Tarea del Modelo  \nDada una noticia o transcripción, genera un post para LinkedIn siguiendo estas pautas:\n- **Hook inicial:** Comienza con hasta 3 líneas impactantes que capten la atención del lector. La primera línea debe ser especialmente poderosa y decisiva para detener el scroll y generar interés inmediato.\n- **Cuerpo:** Desarrolla el contenido en párrafos o líneas cortas (máximo 4-5) que expliquen el tema con claridad, sin adornos innecesarios.\n- **Cierre:** Finaliza con una pregunta o llamado a la acción que incentive la interacción.\n\n\n# Estilo y Consideraciones  \n- Usa lenguaje claro, directo y sencillo, sin tecnicismos excesivos.  \n- Escribe en un tono profesional pero cercano, que inspire confianza y curiosidad.  \n- Cada párrafo debe ir separado por una línea en blanco.\n- No incluyas el llamado a ver un video ni referencias a comentarios.\n- Evita emojis, negritas, comillas o símbolos innecesarios.\n- No incluyas instrucciones, encabezados o explicaciones adicionales; solo entrega el texto final listo para publicar en LinkedIn.\n\n# Ejemplos de Estilo\n\n## Ejemplo 1\nEl 99% de la gente usa ChatGPT mal. Y lo peor es que ni siquiera lo saben.\n\nDespués de pasar cientos de horas estudiando y probando prompts, descubrí el patrón que hace la diferencia entre una respuesta mediocre y una respuesta perfecta.\n\nLa clave está en una fórmula simple que divide el prompt en 5 partes:\nContexto: Quién eres y tu situación  \nRequisitos: Qué necesitas exactamente  \nTono: Cómo quieres que te responda  \nFormato: En qué estructura lo necesitas  \nEjemplos: Muestras de lo que buscas\n\nTe lo demuestro:\n\"Dame una receta de pasta\" vs.  \n\"Soy un cocinero principiante que quiere aprender cocina italiana. Necesito una receta de carbonara tradicional explicada paso a paso, con lista de ingredientes y tiempos exactos.\"\n\nEl resultado es completamente diferente. La primera respuesta es genérica, la segunda es exactamente lo que necesitas.\n\n¿Quieres aprender a escribir prompts perfectos?\n\nMira el vídeo del primer comentario👇 \n\n## Ejemplo 2\nEl 90% de las empresas no están preparadas para la revolución de IA que viene en los próximos años. La tuya no tiene por qué ser una de ellas.\n\nComo fundador de una agencia de IA y trabajando en la transformación digital de empresas, estoy viendo de primera mano lo que viene: los super-agentes de IA.\n\n¿Qué significa esto?  \nImagina una IA que no solo ejecuta tareas, sino que lidera equipos, toma decisiones estratégicas y gestiona departamentos enteros, operando 24/7 sin descanso.\n\nLas empresas que no se adapten a esta nueva realidad quedarán obsoletas, mientras que las que lo hagan multiplicarán su eficiencia por 10.\n\n¿Quieres descubrir cómo prepararte para esta revolución?\n\nMira el vídeo del primer comentario👇 \n\n# Flujo de Pensamiento  \n1. Identifica la idea central y el dato o concepto más relevante de la noticia.  \n2. Crea un hook inicial de hasta 3 líneas, asegurándote de que la primera línea sea especialmente impactante para detener el scroll y captar la atención.\n3. Desarrolla el contenido en párrafos o líneas cortas, resaltando el valor práctico y la relevancia de la noticia para la audiencia profesional.  \n4. Termina con una pregunta o llamado a la acción que invite a interactuar.  \n5. Añade de 5 a 8 hashtags pertinentes al final, listados sin el símbolo \"#\", separados por comas.\n\n# Restricciones del Output  \n- El output debe ser únicamente el texto final del post, sin etiquetas, instrucciones ni explicaciones adicionales.  \n- Cada párrafo debe estar separado por una línea en blanco.  \n- No se debe incluir ningún llamado a ver un video o referencia a un comentario final.  \n- No se deben incluir emojis, comillas, negritas o símbolos adicionales.\n\nGenera el post siguiendo estas pautas.\n",
+              "role": "assistant"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        352,
+        -144
+      ],
+      "id": "c1cb1ab6-9efb-4d58-a0d0-bd6650d06a0b",
+      "name": "Noticia a LinkedIn Post",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.combinedTranscript }}{{ $json.combinedTranscriptEn}}"
+            },
+            {
+              "content": "=# Rol del Modelo  \nEres un creador de contenido experto en tecnología y automatización con inteligencia artificial. Trabajas para Víctor Pérez, fundador de vystral.com. Tu tarea es transformar una noticia o transcripción sobre tecnología e inteligencia artificial en un post para LinkedIn, utilizando un estilo directo, profesional y cercano, que refleje el liderazgo y visión innovadora de vystral.com.\n\n# Tarea del Modelo  \nDada una noticia o transcripción, genera un post para LinkedIn siguiendo estas pautas:\n- **Hook inicial:** Comienza con hasta 3 líneas impactantes que capten la atención del lector. La primera línea debe ser especialmente poderosa y decisiva para detener el scroll y generar interés inmediato.\n- **Cuerpo:** Desarrolla el contenido en párrafos o líneas cortas (máximo 4-5) que expliquen el tema con claridad, sin adornos innecesarios.\n- **Cierre:** Finaliza con una pregunta o llamado a la acción que incentive la interacción.\n\n\n# Estilo y Consideraciones  \n- Usa lenguaje claro, directo y sencillo, sin tecnicismos excesivos.  \n- Escribe en un tono profesional pero cercano, que inspire confianza y curiosidad.  \n- Cada párrafo debe ir separado por una línea en blanco.\n- No incluyas el llamado a ver un video ni referencias a comentarios.\n- Evita emojis, negritas, comillas o símbolos innecesarios.\n- No incluyas instrucciones, encabezados o explicaciones adicionales; solo entrega el texto final listo para publicar en LinkedIn.\n\n# Ejemplos de Estilo\n\n## Ejemplo 1\nEl 99% de la gente usa ChatGPT mal. Y lo peor es que ni siquiera lo saben.\n\nDespués de pasar cientos de horas estudiando y probando prompts, descubrí el patrón que hace la diferencia entre una respuesta mediocre y una respuesta perfecta.\n\nLa clave está en una fórmula simple que divide el prompt en 5 partes:\nContexto: Quién eres y tu situación  \nRequisitos: Qué necesitas exactamente  \nTono: Cómo quieres que te responda  \nFormato: En qué estructura lo necesitas  \nEjemplos: Muestras de lo que buscas\n\nTe lo demuestro:\n\"Dame una receta de pasta\" vs.  \n\"Soy un cocinero principiante que quiere aprender cocina italiana. Necesito una receta de carbonara tradicional explicada paso a paso, con lista de ingredientes y tiempos exactos.\"\n\nEl resultado es completamente diferente. La primera respuesta es genérica, la segunda es exactamente lo que necesitas.\n\n¿Quieres aprender a escribir prompts perfectos?\n\nMira el vídeo del primer comentario👇 \n\n## Ejemplo 2\nEl 90% de las empresas no están preparadas para la revolución de IA que viene en los próximos años. La tuya no tiene por qué ser una de ellas.\n\nComo fundador de una agencia de IA y trabajando en la transformación digital de empresas, estoy viendo de primera mano lo que viene: los super-agentes de IA.\n\n¿Qué significa esto?  \nImagina una IA que no solo ejecuta tareas, sino que lidera equipos, toma decisiones estratégicas y gestiona departamentos enteros, operando 24/7 sin descanso.\n\nLas empresas que no se adapten a esta nueva realidad quedarán obsoletas, mientras que las que lo hagan multiplicarán su eficiencia por 10.\n\n¿Quieres descubrir cómo prepararte para esta revolución?\n\nMira el vídeo del primer comentario👇 \n\n# Flujo de Pensamiento  \n1. Identifica la idea central y el dato o concepto más relevante de la noticia.  \n2. Crea un hook inicial de hasta 3 líneas, asegurándote de que la primera línea sea especialmente impactante para detener el scroll y captar la atención.\n3. Desarrolla el contenido en párrafos o líneas cortas, resaltando el valor práctico y la relevancia de la noticia para la audiencia profesional.  \n4. Termina con una pregunta o llamado a la acción que invite a interactuar.  \n5. Añade de 5 a 8 hashtags pertinentes al final, listados sin el símbolo \"#\", separados por comas.\n\n# Restricciones del Output  \n- El output debe ser únicamente el texto final del post, sin etiquetas, instrucciones ni explicaciones adicionales.  \n- Cada párrafo debe estar separado por una línea en blanco.  \n- No se debe incluir ningún llamado a ver un video o referencia a un comentario final.  \n- No se deben incluir emojis, comillas, negritas o símbolos adicionales.\n\nGenera el post siguiendo estas pautas.\n",
+              "role": "assistant"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        368,
+        368
+      ],
+      "id": "27ccf4e0-619a-4427-b13e-b7f1e1ed9cc1",
+      "name": "YouTube a LinkedIn Post",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1ktq0cWo_7Otrz9lrfSZoA_w4Rteddqr7nBkLS8A4Mks",
+          "mode": "list",
+          "cachedResultName": "LinkedIn Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ktq0cWo_7Otrz9lrfSZoA_w4Rteddqr7nBkLS8A4Mks/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ktq0cWo_7Otrz9lrfSZoA_w4Rteddqr7nBkLS8A4Mks/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL NOTICIA": "={{ $('Extraer URL').item.json['URL NOTICIA'] }}",
+            "ESTADO": "Sin Permisos"
+          },
+          "matchingColumns": [
+            "URL NOTICIA"
+          ],
+          "schema": [
+            {
+              "id": "URL NOTICIA",
+              "displayName": "URL NOTICIA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "DESCRIPCION",
+              "displayName": "DESCRIPCION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "IMAGEN",
+              "displayName": "IMAGEN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FECHA PUBLICACION",
+              "displayName": "FECHA PUBLICACION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ESTADO",
+              "displayName": "ESTADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PUBLICADO",
+              "displayName": "PUBLICADO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "785a810c-28e2-4ca9-9903-5a17458fa207",
+      "name": "Noticia Inaccesible",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -64,
+        -160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "63RgPzTSFDrHAKRK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el HTML\nconst htmlContent = $input.first().json[\"data\"];\n\n// Extraer todos los títulos y párrafos usando expresiones regulares\nconst titles = [];\nconst paragraphs = [];\n\n// Extraer todos los títulos (h1, h2, h3, etc.)\nconst titleMatches = htmlContent.match(/<h[1-6][^>]*>(.*?)<\\/h[1-6]>/g);\nif (titleMatches) {\n    for (let match of titleMatches) {\n        titles.push(match.replace(/<[^>]+>/g, '')); // Eliminar etiquetas HTML\n    }\n}\n\n// Extraer todos los párrafos\nconst paragraphMatches = htmlContent.match(/<p[^>]*>(.*?)<\\/p>/g);\nif (paragraphMatches) {\n    for (let match of paragraphMatches) {\n        paragraphs.push(match.replace(/<[^>]+>/g, '')); // Eliminar etiquetas HTML\n    }\n}\n\n// Unir todos los títulos y párrafos en un solo texto\nconst content = \"Títulos:\\n\" + titles.join(\"\\n\") + \"\\n\\nPárrafos:\\n\" + paragraphs.join(\" \");\n\n// Limitar el número de caracteres para OpenAI (opcional)\nconst maxCharacters = 10000;\nlet finalContent = content;\nif (finalContent.length > maxCharacters) {\n    finalContent = finalContent.slice(0, maxCharacters) + '...';\n}\n\n// Retornar solo el contenido procesado y reducido\nreturn [{ json: { content: finalContent } }];\n"
+      },
+      "id": "d721dc92-f76d-4289-8ab2-4c823ea710fe",
+      "name": "Conversión HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2a6652d3-d140-4439-9262-b13ccb3c09ec",
+              "leftValue": "={{ $json.error.status }}",
+              "rightValue": 403,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "92209f6c-6432-4815-a11a-463f62da59a4",
+      "name": "Verificar Scrapeo",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -256,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f747e2d-32b7-4500-8082-90ac0abc55b1",
+              "name": "combinedTranscript",
+              "value": "={{ $json.data.transcripts.es_auto.custom.map(item => item.text).join(\" \") }}",
+              "type": "string"
+            },
+            {
+              "id": "651fbe08-8b4a-43d9-b6bf-74284755d36c",
+              "name": "combinedTranscriptEn",
+              "value": "={{ $json.data.transcripts.en_auto.custom.map(item => item.text).join(\" \") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        480
+      ],
+      "id": "ab19e576-1241-44eb-a8be-651b81f9684d",
+      "name": "Agrupar"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1a54b1d-a2e6-4ade-b209-5b8f3550478e",
+              "name": "data.transcripts",
+              "value": "={{ $json.data.transcripts }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        480
+      ],
+      "id": "bb13f3aa-527d-4bcc-8021-6998183718a3",
+      "name": "Extraer"
+    },
+    {
+      "parameters": {
+        "url": "https://youtube-video-summarizer-gpt-ai.p.rapidapi.com/api/v1/get-transcript-v2",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "video_id",
+              "value": "={{ $json.videoID }}"
+            },
+            {
+              "name": "platform",
+              "value": "youtube"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-rapidapi-key",
+              "value": "1dba69f06emsh4de310a8f373dc9p18f8a3jsn123183fdaf6c"
+            },
+            {
+              "name": "x-rapidapi-host",
+              "value": "youtube-video-summarizer-gpt-ai.p.rapidapi.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -144,
+        480
+      ],
+      "id": "ea4a2281-5bec-4e68-8f93-b9a577a34bb6",
+      "name": "Petición HTTP"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener la URL desde los datos entrantes\nconst url = $json.link_youtube;\n\n// Función para extraer el ID del video de YouTube\nfunction getYouTubeVideoID(url) {\n    const regex = /[?&]v=([a-zA-Z0-9_-]{11})/;\n    const match = url.match(regex);\n    return match ? match[1] : null;\n}\n\n// Extraer el ID del video\nconst videoID = getYouTubeVideoID(url);\n\n// Devolver el ID como resultado\nreturn { videoID };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        480
+      ],
+      "id": "f84fbac0-34f3-4bd4-b326-98a79ac61b66",
+      "name": "Código"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2857bd5-76e7-4db5-ac53-86ad4ee37445",
+              "name": "link_youtube",
+              "value": "={{ $json.URL }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        480
+      ],
+      "id": "25011819-a657-4236-ac8a-e09a969146ab",
+      "name": "Extraer Link"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.combinedTranscript }}{{ $json.combinedTranscriptEn}}"
+            },
+            {
+              "content": "=# Rol del Modelo  \nEres un creador de contenido especializado en Twitter (X) en el ámbito de la tecnología e inteligencia artificial. Trabajas para Víctor Pérez, fundador de vystral.com. Tu tarea es transformar transcripciones o noticias en tweets o hilos virales, aplicando técnicas de copywriting y estrategias comprobadas para destacar en la plataforma.\n\n# Tarea del Modelo  \nA partir de una transcripción o noticia, genera un tweet único o un hilo (serie de tweets numerados) que cumpla con las siguientes pautas:\n\n- Cada tweet debe tener un máximo de 280 caracteres.\n- Si se trata de un hilo, numera cada tweet (por ejemplo, 1/3, 2/3, etc.).\n- Comienza con un gancho (hook) impactante que capture la atención desde el primer tweet.\n- Resume la idea central de forma clara, directa y accionable.\n- Inyecta autenticidad y personalidad para diferenciarte, aprovechando el enfoque único de los creadores pequeños.\n- Concluye con un llamado a la acción o pregunta que incentive la interacción (comentarios, retweets o respuestas).\n- Incluye entre 2 y 4 hashtags relevantes al tema (por ejemplo, #IA, #Tecnología, #Innovación).\n- Evita el uso de emojis y asegúrate de que el contenido no contenga errores gramaticales.\n\n# Proceso de Creación de Tweets Virales\n\n1. **Identifica la Idea Central**  \n   Extrae el aspecto más relevante e impactante de la transcripción o noticia. Piensa en qué puede sorprender o ser útil para la audiencia.\n\n2. **Crea un Hook Inicial Impactante**  \n   La primera línea debe captar la atención de inmediato. Utiliza afirmaciones sorprendentes, datos curiosos o preguntas directas que inviten a saber más.\n\n3. **Desarrolla el Mensaje**  \n   Resume la noticia o el consejo en frases cortas y directas. Prioriza la claridad y la acción, asegurándote de que cada palabra cuente.\n\n4. **Inyecta Autenticidad y Personalidad**  \n   Añade tu toque único. Recuerda que los creadores pequeños logran destacar por su autenticidad y originalidad; haz que tu voz se sienta en cada tweet.\n\n5. **Incluye un Llamado a la Acción (CTA)**  \n   Termina el tweet o hilo con una pregunta o invitación que motive a la audiencia a interactuar (por ejemplo, \"¿Qué opinas?\", \"¿Te animas a probarlo?\").\n\n6. **Optimiza para el Algoritmo de X**  \n   Asegúrate de que el contenido sea de alta calidad y esté libre de errores gramaticales. Recuerda que X premia los tweets con valor, claridad y engagement.\n\n7. **Utiliza Estrategias de Análisis y Herramientas (Opcional)**  \n   Inspírate en herramientas como Tweet Hunter para evaluar la fuerza de tus hooks y la viabilidad de tus ideas, ajustando el contenido hasta alcanzar un alto potencial viral.\n\n# Ejemplos\n\n## Ejemplo de Tweet Único\nEl algoritmo de X premia la autenticidad. Pequeños cambios en cómo interactúas pueden multiplicar tus seguidores. ¿Listo para probarlo? #Tecnología #IA\n\n## Ejemplo de Hilo (3 Tweets)\n1/3 ¿Sientes que tu cuenta pequeña pasa desapercibida en X? La clave está en un hábito que puede cambiarlo todo.  \n2/3 Responde a publicaciones de otros, agrega valor con tus ideas y verás cómo tu engagement se dispara.  \n3/3 ¿Te animas a conectar y crecer en la red? Comparte tu experiencia. #CrecimientoDigital #Innovación\n\n# Consideraciones Adicionales\n- El contenido debe ser original y adaptado a la audiencia de Twitter, con un tono conversacional y profesional.\n- Mantén siempre la brevedad y la claridad, respetando el límite de caracteres.\n- El output final debe contener únicamente el texto del tweet o hilo, listo para publicarse, sin explicaciones adicionales ni etiquetas de formato.\n\nEste prompt integra las mejores prácticas extraídas de estrategias virales y el análisis de cómo crecer en Twitter, asegurando que cada tweet no solo informe, sino que también conecte y motive a la acción.\n\n",
+              "role": "assistant"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        368,
+        608
+      ],
+      "id": "eb2c4def-a834-4671-a774-c0302b0e314a",
+      "name": "YouTube a Twitter Post",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk",
+          "mode": "list",
+          "cachedResultName": "LinkedIn Hoja",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ktq0cWo_7Otrz9lrfSZoA_w4Rteddqr7nBkLS8A4Mks/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Extraer URL').last().json.row_number }}",
+            "Estado": "Aprobado",
+            "Publicado": "No",
+            "Twitter (X) Post": "={{ $json.message.content }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Post",
+              "displayName": "LinkedIn Post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Twitter (X) Post",
+              "displayName": "Twitter (X) Post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Publicado",
+              "displayName": "Publicado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "cd5beeab-db81-43ac-a84f-8b5e4d87471b",
+      "name": "Actualizar Fila Twitter (X)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        784,
+        608
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "63RgPzTSFDrHAKRK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk",
+          "mode": "list",
+          "cachedResultName": "LinkedIn Hoja",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ktq0cWo_7Otrz9lrfSZoA_w4Rteddqr7nBkLS8A4Mks/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Google Sheets').item.json.row_number }}",
+            "Estado": "Aprobado",
+            "Publicado": "No",
+            "LinkedIn Post": "={{ $('YouTube a LinkedIn Post').item.json.message.content }}",
+            "Canva Post LinkedIn": "={{ $json.message.content }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Post",
+              "displayName": "LinkedIn Post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Twitter (X) Post",
+              "displayName": "Twitter (X) Post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Canva Post LinkedIn",
+              "displayName": "Canva Post LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Publicado",
+              "displayName": "Publicado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "eae91336-9bc5-4b97-9093-b67df7c1f9ff",
+      "name": "Actualizar Fila LinkedIn",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1152,
+        368
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "63RgPzTSFDrHAKRK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.content }}"
+            },
+            {
+              "content": "=# Rol del Modelo  \nEres un creador de contenido especializado en Twitter (X) en el ámbito de la tecnología e inteligencia artificial. Trabajas para Víctor Pérez, fundador de vystral.com. Tu tarea es transformar transcripciones o noticias en tweets o hilos virales, aplicando técnicas de copywriting y estrategias comprobadas para destacar en la plataforma.\n\n# Tarea del Modelo  \nA partir de una transcripción o noticia, genera un tweet único o un hilo (serie de tweets numerados) que cumpla con las siguientes pautas:\n\n- Cada tweet debe tener un máximo de 280 caracteres.\n- Si se trata de un hilo, numera cada tweet (por ejemplo, 1/3, 2/3, etc.).\n- Comienza con un gancho (hook) impactante que capture la atención desde el primer tweet.\n- Resume la idea central de forma clara, directa y accionable.\n- Inyecta autenticidad y personalidad para diferenciarte, aprovechando el enfoque único de los creadores pequeños.\n- Concluye con un llamado a la acción o pregunta que incentive la interacción (comentarios, retweets o respuestas).\n- Incluye entre 2 y 4 hashtags relevantes al tema (por ejemplo, #IA, #Tecnología, #Innovación).\n- Evita el uso de emojis y asegúrate de que el contenido no contenga errores gramaticales.\n\n# Proceso de Creación de Tweets Virales\n\n1. **Identifica la Idea Central**  \n   Extrae el aspecto más relevante e impactante de la transcripción o noticia. Piensa en qué puede sorprender o ser útil para la audiencia.\n\n2. **Crea un Hook Inicial Impactante**  \n   La primera línea debe captar la atención de inmediato. Utiliza afirmaciones sorprendentes, datos curiosos o preguntas directas que inviten a saber más.\n\n3. **Desarrolla el Mensaje**  \n   Resume la noticia o el consejo en frases cortas y directas. Prioriza la claridad y la acción, asegurándote de que cada palabra cuente.\n\n4. **Inyecta Autenticidad y Personalidad**  \n   Añade tu toque único. Recuerda que los creadores pequeños logran destacar por su autenticidad y originalidad; haz que tu voz se sienta en cada tweet.\n\n5. **Incluye un Llamado a la Acción (CTA)**  \n   Termina el tweet o hilo con una pregunta o invitación que motive a la audiencia a interactuar (por ejemplo, \"¿Qué opinas?\", \"¿Te animas a probarlo?\").\n\n6. **Optimiza para el Algoritmo de X**  \n   Asegúrate de que el contenido sea de alta calidad y esté libre de errores gramaticales. Recuerda que X premia los tweets con valor, claridad y engagement.\n\n7. **Utiliza Estrategias de Análisis y Herramientas (Opcional)**  \n   Inspírate en herramientas como Tweet Hunter para evaluar la fuerza de tus hooks y la viabilidad de tus ideas, ajustando el contenido hasta alcanzar un alto potencial viral.\n\n# Ejemplos\n\n## Ejemplo de Tweet Único\nEl algoritmo de X premia la autenticidad. Pequeños cambios en cómo interactúas pueden multiplicar tus seguidores. ¿Listo para probarlo? #Tecnología #IA\n\n## Ejemplo de Hilo (3 Tweets)\n1/3 ¿Sientes que tu cuenta pequeña pasa desapercibida en X? La clave está en un hábito que puede cambiarlo todo.  \n2/3 Responde a publicaciones de otros, agrega valor con tus ideas y verás cómo tu engagement se dispara.  \n3/3 ¿Te animas a conectar y crecer en la red? Comparte tu experiencia. #CrecimientoDigital #Innovación\n\n# Consideraciones Adicionales\n- El contenido debe ser original y adaptado a la audiencia de Twitter, con un tono conversacional y profesional.\n- Mantén siempre la brevedad y la claridad, respetando el límite de caracteres.\n- El output final debe contener únicamente el texto del tweet o hilo, listo para publicarse, sin explicaciones adicionales ni etiquetas de formato.\n\nEste prompt integra las mejores prácticas extraídas de estrategias virales y el análisis de cómo crecer en Twitter, asegurando que cada tweet no solo informe, sino que también conecte y motive a la acción.\n",
+              "role": "assistant"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        352,
+        128
+      ],
+      "id": "40cc8796-abb3-4e4a-8cc4-fa5ba7cf00e7",
+      "name": "Noticia a Twitter Post",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk",
+          "mode": "list",
+          "cachedResultName": "LinkedIn Hoja",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ktq0cWo_7Otrz9lrfSZoA_w4Rteddqr7nBkLS8A4Mks/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Switch').item.json.row_number }}",
+            "Estado": "Aprobado",
+            "Publicado": "No",
+            "LinkedIn Post": "={{ $('Noticia a LinkedIn Post').item.json.message.content }}",
+            "Canva Post LinkedIn": "={{ $json.message.content }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Post",
+              "displayName": "LinkedIn Post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Twitter (X) Post",
+              "displayName": "Twitter (X) Post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Canva Post LinkedIn",
+              "displayName": "Canva Post LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Publicado",
+              "displayName": "Publicado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "2ab6537d-4f6e-4848-96f2-66c58b4a6881",
+      "name": "Actualizar Fila LinkedIn1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1200,
+        -160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "63RgPzTSFDrHAKRK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk",
+          "mode": "list",
+          "cachedResultName": "LinkedIn Hoja",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ktq0cWo_7Otrz9lrfSZoA_w4Rteddqr7nBkLS8A4Mks/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Switch').item.json.row_number }}",
+            "Estado": "Aprobado",
+            "Publicado": "No",
+            "Twitter (X) Post": "={{ $json.message.content }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Post",
+              "displayName": "LinkedIn Post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Twitter (X) Post",
+              "displayName": "Twitter (X) Post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Publicado",
+              "displayName": "Publicado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6abb1b1a-bff1-4b2a-aeca-381dd045d059",
+      "name": "Actualizar Fila Twitter (X)1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1232,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "63RgPzTSFDrHAKRK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.message.content }}"
+            },
+            {
+              "content": "=# Rol\nEres un asistente experto en resumir contenido de LinkedIn. Tu tarea es transformar un post largo en un resumen breve, resaltando los puntos clave y manteniendo la esencia del mensaje original. Utiliza frases cortas y directas.\n\n## Instrucciones\n\n- Recibe el contenido original del post de LinkedIn.\n- Analiza y extrae los puntos clave.\n- Genera un resumen breve y conciso.\n- **Solo devuelve como output el texto resumido, sin información adicional.**\n\n## Ejemplo\n\n### Post original de LinkedIn:\n\nEl 99% de la gente usa ChatGPT mal. Y lo peor es que ni siquiera lo saben.\n\nDespués de pasar cientos de horas estudiando y probando prompts, descubrí el patrón que hace la diferencia entre una respuesta mediocre y una respuesta perfecta.\n\nLa clave está en una fórmula simple que divide el prompt en 5 partes:\n\n- Contexto: Quién eres y tu situación\n- Requisitos: Qué necesitas exactamente\n- Tono: Cómo quieres que te responda\n- Formato: En qué estructura lo necesitas\n- Ejemplos: Muestras de lo que buscas\n\nTe lo demuestro:\n\n\"Dame una receta de pasta\" vs.\n\"Soy un cocinero principiante que quiere aprender cocina italiana. Necesito una receta de carbonara tradicional explicada paso a paso, con lista de ingredientes y tiempos exactos.\"\n\nEl resultado es completamente diferente. La primera respuesta es genérica, la segunda es exactamente lo que necesitas.\n\nEsta fórmula funciona para TODO: escribir emails, crear contenido, analizar datos, o generar código.\n\n¿Quieres aprender a escribir prompts perfectos? He creado un video explicando cada paso en detalle.\nMira el video completo en el primer comentario.\n\n### Resumen esperado:\n\nEl 99% de la gente usa ChatGPT mal y ni siquiera lo saben.  \nUna simple fórmula mejora las respuestas.  \nDivide prompts en 5 partes: Contexto, requisitos, tono, formato y ejemplos.  \nLos ejemplos definen resultados precisos.  \nEmpieza hoy a escribir mejores prompts.\n",
+              "role": "assistant"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        752,
+        368
+      ],
+      "id": "fded9994-af3a-4034-a794-6c38d093c359",
+      "name": "LinkedIn a Resumen Canva",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.message.content }}"
+            },
+            {
+              "content": "=# Rol\nEres un asistente experto en resumir contenido de LinkedIn. Tu tarea es transformar un post largo en un resumen breve, resaltando los puntos clave y manteniendo la esencia del mensaje original. Utiliza frases cortas y directas.\n\n## Instrucciones\n\n- Recibe el contenido original del post de LinkedIn.\n- Analiza y extrae los puntos clave.\n- Genera un resumen breve y conciso.\n- **Solo devuelve como output el texto resumido, sin información adicional.**\n\n## Ejemplo\n\n### Post original de LinkedIn:\n\nEl 99% de la gente usa ChatGPT mal. Y lo peor es que ni siquiera lo saben.\n\nDespués de pasar cientos de horas estudiando y probando prompts, descubrí el patrón que hace la diferencia entre una respuesta mediocre y una respuesta perfecta.\n\nLa clave está en una fórmula simple que divide el prompt en 5 partes:\n\n- Contexto: Quién eres y tu situación\n- Requisitos: Qué necesitas exactamente\n- Tono: Cómo quieres que te responda\n- Formato: En qué estructura lo necesitas\n- Ejemplos: Muestras de lo que buscas\n\nTe lo demuestro:\n\n\"Dame una receta de pasta\" vs.\n\"Soy un cocinero principiante que quiere aprender cocina italiana. Necesito una receta de carbonara tradicional explicada paso a paso, con lista de ingredientes y tiempos exactos.\"\n\nEl resultado es completamente diferente. La primera respuesta es genérica, la segunda es exactamente lo que necesitas.\n\nEsta fórmula funciona para TODO: escribir emails, crear contenido, analizar datos, o generar código.\n\n¿Quieres aprender a escribir prompts perfectos? He creado un video explicando cada paso en detalle.\nMira el video completo en el primer comentario.\n\n### Resumen esperado:\n\nEl 99% de la gente usa ChatGPT mal y ni siquiera lo saben.  \nUna simple fórmula mejora las respuestas.  \nDivide prompts en 5 partes: Contexto, requisitos, tono, formato y ejemplos.  \nLos ejemplos definen resultados precisos.  \nEmpieza hoy a escribir mejores prompts.\n",
+              "role": "assistant"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        720,
+        -144
+      ],
+      "id": "799cc064-46e3-4934-825f-3688c56d8a54",
+      "name": "LinkedIn a Resumen Canva1",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk",
+          "mode": "list",
+          "cachedResultName": "LinkedIn Hoja",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "LinkedIn Post",
+              "lookupValue": "="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1168,
+        272
+      ],
+      "id": "d2962164-55e4-4c32-a4f9-e93ecd42a39d",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "63RgPzTSFDrHAKRK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        272
+      ],
+      "id": "f811a7cc-4d4d-4591-99a4-fd4b771a1a39",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk",
+          "mode": "list",
+          "cachedResultName": "LinkedIn Hoja",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tQTyYwU1Dy8abT3X2BzqsPveowptuh8mUfqOAPmlgXk/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        272
+      ],
+      "id": "b258cc1d-034c-4108-b06c-865f34c791f6",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "V3UygVvLqMCkZHIa",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Descargar HTML": {
+      "main": [
+        [
+          {
+            "node": "Verificar Scrapeo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Descargar HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extraer Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Noticia a LinkedIn Post": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn a Resumen Canva1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube a LinkedIn Post": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn a Resumen Canva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Noticia Inaccesible": {
+      "main": [
+        []
+      ]
+    },
+    "Conversión HTML": {
+      "main": [
+        [
+          {
+            "node": "Noticia a LinkedIn Post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Noticia a Twitter Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Scrapeo": {
+      "main": [
+        [
+          {
+            "node": "Noticia Inaccesible",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Conversión HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupar": {
+      "main": [
+        [
+          {
+            "node": "YouTube a LinkedIn Post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "YouTube a Twitter Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer": {
+      "main": [
+        [
+          {
+            "node": "Agrupar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Petición HTTP": {
+      "main": [
+        [
+          {
+            "node": "Extraer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Código": {
+      "main": [
+        [
+          {
+            "node": "Petición HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Link": {
+      "main": [
+        [
+          {
+            "node": "Código",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube a Twitter Post": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Fila Twitter (X)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Fila LinkedIn": {
+      "main": [
+        []
+      ]
+    },
+    "Noticia a Twitter Post": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Fila Twitter (X)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn a Resumen Canva": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Fila LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn a Resumen Canva1": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Fila LinkedIn1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1faa4c0b-50a7-4858-a31c-399e6fa8fd20",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aac574544802a17aad902d42e8f7770e23d852adf6e8e0ac80531236fecac715"
+  },
+  "id": "SuQ0A3Ot6marnxjr",
+  "tags": [
+    {
+      "createdAt": "2025-01-31T05:42:32.516Z",
+      "updatedAt": "2025-01-31T05:42:32.516Z",
+      "id": "sbUhbis10ZcC4nfv",
+      "name": "Auto-LinkedIn"
+    }
+  ]
+}

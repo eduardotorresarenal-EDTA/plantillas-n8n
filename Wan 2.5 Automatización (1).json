@@ -1,0 +1,455 @@
+{
+  "name": "Wan 2.5 Automatización",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e66e3c3e-bb38-4b42-8aa4-336d0a2e78d6",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        1392
+      ],
+      "id": "78334184-b401-466f-b754-c6958842ee48",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        1560
+      ],
+      "id": "2b108a1d-b4eb-4e3b-bb89-fb173db5ba95",
+      "name": "Wait1",
+      "webhookId": "6fd10346-a72f-47c4-81cd-1b4841b3df96"
+    },
+    {
+      "parameters": {
+        "path": "52a5682a-cc55-4f96-9fd0-828ed75b6bed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -992,
+        1464
+      ],
+      "id": "ca5e748f-fd4a-4ca2-b43c-3ce07631592f",
+      "name": "Webhook",
+      "webhookId": "52a5682a-cc55-4f96-9fd0-828ed75b6bed"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appoZG54vYjTSLb90",
+          "mode": "list",
+          "cachedResultName": "Generación de Vídeo Wan 2.5",
+          "cachedResultUrl": "https://airtable.com/appoZG54vYjTSLb90"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblx1SlAhSzwELx3B",
+          "mode": "list",
+          "cachedResultName": "Video Jobs",
+          "cachedResultUrl": "https://airtable.com/appoZG54vYjTSLb90/tblx1SlAhSzwELx3B"
+        },
+        "filterByFormula": "{status} = \"standby\"",
+        "options": {
+          "fields": [
+            "Title",
+            "First frame",
+            "First frame URL",
+            "Video prompt",
+            "Duration (s)",
+            "Resolution",
+            "Crear Vídeo",
+            "Status",
+            "Añadido",
+            "Video link"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -768,
+        1464
+      ],
+      "id": "a93b4961-295f-4ea5-8179-7804df125ddb",
+      "name": "Obtener Data",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "hbylJHjbxY7uLZlm",
+          "name": "Airtable API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"wan/2-5-image-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ ($json['Video prompt'] ?? '').replaceAll('\\r\\n','\\\\n').replaceAll('\\n','\\\\n') }}\",\n    \"image_url\": \"{{ $json['First frame']?.[0]?.thumbnails?.full?.url || '' }}\",\n    \"duration\": \"{{ parseInt($json['Duration (s)'] ?? 10, 10) }}\",\n    \"resolution\": \"{{ $json.Resolution ?? '1080p' }}\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -544,
+        1464
+      ],
+      "id": "4ffe7ea0-94ce-4a95-a590-74d4821992d5",
+      "name": "Crear Peticion Video",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8pEU6nkhSsdNj9LO",
+          "name": "Kie AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.kie.ai/api/v1/jobs/recordInfo?taskId={{ $json.data.taskId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        1464
+      ],
+      "id": "31761ff0-23e0-4c9d-95c3-ec56ce6e9ff9",
+      "name": "Obtener Video",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8pEU6nkhSsdNj9LO",
+          "name": "Kie AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appoZG54vYjTSLb90",
+          "mode": "list",
+          "cachedResultName": "Generación de Vídeo Wan 2.5",
+          "cachedResultUrl": "https://airtable.com/appoZG54vYjTSLb90"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblx1SlAhSzwELx3B",
+          "mode": "list",
+          "cachedResultName": "Video Jobs",
+          "cachedResultUrl": "https://airtable.com/appoZG54vYjTSLb90/tblx1SlAhSzwELx3B"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Añadido": false,
+            "id": "={{ $('Obtener Data').item.json.id }}",
+            "Status": "completed",
+            "Video link": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+            "Duration (s)": 10
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "First frame",
+              "displayName": "First frame",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "First frame URL",
+              "displayName": "First frame URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Video prompt",
+              "displayName": "Video prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Duration (s)",
+              "displayName": "Duration (s)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resolution",
+              "displayName": "Resolution",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "480p",
+                  "value": "480p"
+                },
+                {
+                  "name": "720p",
+                  "value": "720p"
+                },
+                {
+                  "name": "1080p",
+                  "value": "1080p"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Crear Vídeo",
+              "displayName": "Crear Vídeo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "standby",
+                  "value": "standby"
+                },
+                {
+                  "name": "creating",
+                  "value": "creating"
+                },
+                {
+                  "name": "completed",
+                  "value": "completed"
+                },
+                {
+                  "name": "error",
+                  "value": "error"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Video link",
+              "displayName": "Video link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Añadido",
+              "displayName": "Añadido",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        128,
+        1344
+      ],
+      "id": "dc23578b-89b4-4dd5-82f9-dd08095d9232",
+      "name": "Actualizar fila",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "hbylJHjbxY7uLZlm",
+          "name": "Airtable API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Actualizar fila",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Obtener Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Obtener Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Data": {
+      "main": [
+        [
+          {
+            "node": "Crear Peticion Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Peticion Video": {
+      "main": [
+        [
+          {
+            "node": "Obtener Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Video": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "aec2cd8f-b92b-4c18-831e-cfab81d4072b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aac574544802a17aad902d42e8f7770e23d852adf6e8e0ac80531236fecac715"
+  },
+  "id": "2gZxCOEqsF3dIUc0",
+  "tags": []
+}

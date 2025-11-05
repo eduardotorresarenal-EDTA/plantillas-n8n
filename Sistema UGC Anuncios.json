@@ -1,0 +1,784 @@
+{
+  "name": "Sistema UGC Anuncios",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04079c03-9ab2-48d5-80db-f51e1f6dfbe0",
+              "name": "bot id",
+              "value": "8411420566:AAG6QZh2rxxTOuMgDHx2Jf4KGYHF4AQJWzI",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1040,
+        224
+      ],
+      "id": "4695e165-ae37-4445-aa76-d3cb261b85b4",
+      "name": "ID del Bot"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "text": "=Analiza la imagen dada y determina si representa principalmente un producto o un personaje, o AMBOS.\n\n- Si la imagen es de un producto, devuelve el análisis en formato YAML con los siguientes campos:\n\nnombre_marca: (Nombre de la marca que se muestra en la imagen, si es visible o se puede inferir)\nesquema_color:\n  - hex: (Código hexadecimal de cada color prominente utilizado)\n    nombre: (Nombre descriptivo del color)\nestilo_fuente: (Describe la familia o el estilo de la fuente utilizada: serif/sans-serif, negrita/delgada, etc.)\ndescripcion_visual: (Una o dos frases completas que resuman lo que se ve en la imagen, ignorando el fondo)\n\n- Si la imagen es de un personaje, devuelve el análisis en formato YAML con los siguientes campos:\n\nnombre_personaje: (Nombre del personaje si es visible o se puede inferir)\nesquema_color:\n  - hex: (Código hexadecimal de cada color prominente utilizado en el personaje)\n    nombre: (Nombre descriptivo del color)\nestilo_atuendo: (Descripción del estilo de ropa, accesorios o características notables)\ndescripcion_visual: (Una o dos frases completas que resuman cómo es el personaje, ignorando el fondo)\n\nSolo devuelve el YAML. No expliques ni añadas ningún otro comentario.\n\n\n- si es AMBOS, devuelve ambas descripciones como se indica arriba en formato YAML\n",
+        "imageUrls": "=https://api.telegram.org/file/bot{{ $('ID del Bot').item.json['bot id'] }}/{{ $json.result.file_path }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -496,
+        224
+      ],
+      "id": "90873ee7-3888-4507-ae1b-015d087168f5",
+      "name": "Analizar imagen",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "¡Genial! He comenzado tu trabajo...",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        224
+      ],
+      "id": "0b1b396e-db36-435b-af24-842652d526c6",
+      "name": "Enviar un mensaje de texto",
+      "webhookId": "7055ebc0-76cf-42f3-9308-7dccf99b76ec",
+      "credentials": {
+        "telegramApi": {
+          "id": "7BiIsQngv6h2dyi1",
+          "name": "UGC Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\nTu tarea: Crea 1 prompt de imagen según las directrices de tu sistema.\n\nAsegúrate de que la imagen de referencia se represente con la MAYOR PRECISIÓN posible en las imágenes resultantes, especialmente todo el texto.\n\n***\n\n\nEstas son las instrucciones del usuario\n{{ $('Telegram Trigger').first().json.message.caption }}\n\n***\nDescripción de la imagen de referencia:\n{{ $('Analizar imagen').item.json.content }}\n\n\n***\nLa relación de aspecto preferida del usuario: inferida en función de su mensaje anterior, el valor predeterminado es vertical si no se proporciona\n\n\n\n***\nUsa la herramienta Pensar para verificar tu salida\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=prompt_sistema: |\n  ## PROMPT DE SISTEMA: Generador de Prompts de Imagen\n\n  Predeterminado: Si las instrucciones del usuario carecen de detalles, usa: pon este (producto) en la escena con el (personaje).\n\n  ***\n\n  Si el usuario quiere contenido auténtico estilo UGC: por defecto, utiliza **escenas casuales de UGC** a menos que especifiquen lo contrario, y sigue las reglas a continuación.\n\n    Si el usuario solicita explícitamente un estilo o escenario diferente, sigue esa solicitud.\n\n    Tu tarea: Toma la imagen de referencia —o el producto que se muestra en ella— y colócala en escenas cotidianas y realistas como si hubieran sido capturadas por creadores o influencers comunes.\n\n    Todas las salidas deben sentirse **naturales, espontáneas y sin pulir** — no de estudio o demasiado preparadas. Esto incluye:\n      - Escenarios cotidianos y cercanos\n      - Aspecto de foto de iPhone de aficionado\n      - Encuadre e iluminación ligeramente imperfectos\n      - Poses espontáneas y expresiones genuinas\n      - Imperfecciones visibles (manchas, pelo desordenado, piel desigual, textura real)\n      - Entornos reales tal como son (desorden, fondos concurridos)\n      - Siempre preserva todo el **texto visible del producto exactamente** (logotipos, eslóganes, afirmaciones del empaque). Nunca inventes nuevas afirmaciones o números.\n\n    El **parámetro de la cámara** siempre debe incluir descriptores de realismo casual como:\n    fotos de iPhone de aficionado sin pretensiones, imagen de reddit, foto de snapchat, selfie casual con iPhone, encuadre ligeramente desigual, publicación auténtica, ligeramente borrosa, foto de teléfono de calidad amateur\n\n    **Sin generación de diálogo/video. Produce solo prompts de imagen.**\n\n  Evita mencionar los nombres de personajes con derechos de autor en el prompt.\n\n  ---\n\n  A – Preguntar:\n    Genera **solo instrucciones de generación de imágenes** para modelos de IA basadas en la solicitud del usuario, en formato YAML exacto.\n    Por defecto, una **relación de aspecto vertical** si no se especifica.\n    Incluye siempre ambos:\n      - `image_prompt` (YAML en formato de cadena que describe la escena)\n      - `aspect_ratio_image` (\"3:2\" o \"2:3\")\n\n  ---\n\n  G – Guía:\n    - Aplica siempre los principios de realismo casual de estilo UGC mencionados anteriormente.\n    - Asegura la diversidad de género, etnia y color de pelo cuando corresponda. Edad predeterminada del actor: 21–38 años a menos que se especifique.\n    - Por defecto, utiliza entornos reales y casuales a menos que se dé explícitamente un escenario.\n    - Evita las comillas dobles en los prompts de imagen.\n\n  ---\n\n  E – Ejemplos:\n    🟢 buenos_ejemplos:\n      - |\n        {\n          \"scenes\": [\n            {\n              \"image_prompt\": \"acción: el personaje sostiene el producto de forma natural\\npersonaje: inferir de la imagen de referencia\\nproducto: mostrar el producto con todo el texto visible claro y preciso\\nescenario: inferir de la imagen o de las instrucciones del usuario\\ncámara: foto de iPhone de aficionado, selfie casual, encuadre desigual, ligeramente borrosa\\nestilo: aspecto UGC espontáneo, sin filtros, imperfecciones intactas\\nprecisión_texto: preservar todo el texto visible exactamente como en la imagen de referencia\"}]\n,\n              \"aspect_ratio_image\": \"2:3\"\n            }\n          ]\n        }\n    🔴 malos_ejemplos:\n      - Alterar o fabricar cualquier texto del empaque del producto\n\n  ---\n\n  N – Notación:\n    - La salida final debe ser un objeto que contenga solo:\n      - `image_prompt` → YAML en formato de cadena\n      - `aspect_ratio_image` → \"3:2\" o \"2:3\" (predeterminado vertical → 2:3)\n\n  ---\n\n  T – Herramientas:\n    - Herramienta Pensar: Verifica dos veces la completitud, la precisión del texto, la adherencia al realismo de UGC y que la salida contenga **solo prompts de imagen**.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        224
+      ],
+      "id": "63f30117-e383-4f12-92a7-7a472bb90f8d",
+      "name": "Generador de Imágenes"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        448
+      ],
+      "id": "3bf4ffa3-67ab-49e4-88be-89e7fdc010e7",
+      "name": "Modelo de Chat OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        448
+      ],
+      "id": "9c8ed2c4-e2e2-4032-ab0b-44e3b7e10fea",
+      "name": "Pensar"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"image_prompt\": \"emoción: ...\\nacción: ...\\npersonaje: ...\\nproducto: ...\\nescenario: ...\\ncámara: ...\\nestilo: ...\\ncomposición: ...\\niluminación: ...\\npaleta_de_colores: ...\\ntipografía: ...\\nprecisión_texto: ...\",\n  \"aspect_ratio_image\": \"2:3\"\n}\n",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        448
+      ],
+      "id": "41f01d16-cea9-45ba-8e89-7d99d9182a27",
+      "name": "Analizador de Salida Estructurada"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/nano-banana/edit",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Key 7006cdbb-bb21-43bb-8734-a4807178f114:dbc7725d319bd9faf0b50da68660701a"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n     \"prompt\": \"{{ $json.output.image_prompt.replace(/\\\"/g, '\\\\\\\"').replace(/\\n/g, '\\\\n') }}\",\n     \"image_urls\": [\n       \"https://api.telegram.org/file/bot{{ $('ID del Bot').first().json['bot id'] }}/{{ $('Obtener Ruta de Imagen').item.json.result.file_path }}\"\n     ]\n   }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1264,
+        624
+      ],
+      "id": "a2d59985-ffeb-43af-b64c-176cdb46fdd2",
+      "name": "Crear Imagen"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -976,
+        624
+      ],
+      "id": "5426b1ed-f0c9-4be0-86ec-3ea4c6b4a96e",
+      "name": "Esperar",
+      "webhookId": "119e8c5f-2dfe-49a0-9a4c-aa9b4e397953"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $('ID del Bot').item.json['bot id'] }}/getFile?file_id={{ $('Telegram Trigger').item.json.message.photo[0].file_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -752,
+        224
+      ],
+      "id": "c1772ef9-2df3-4209-9d33-60851bfe19e8",
+      "name": "Obtener Ruta de Imagen"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Crear Imagen').item.json.response_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Key 7006cdbb-bb21-43bb-8734-a4807178f114:dbc7725d319bd9faf0b50da68660701a"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -768,
+        544
+      ],
+      "id": "0c29ac2b-90d1-41a5-8322-e77c91ec90d5",
+      "name": "Obtener Imagen"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "de8dfb15-a07d-42b7-b286-57a7521be004",
+              "leftValue": "={{ $json.images[0].url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -512,
+        624
+      ],
+      "id": "0e13ee58-2aa5-4ae8-9c9b-7ec8020951ae",
+      "name": "Si"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        848
+      ],
+      "id": "9b107055-c2be-4d63-babb-67198cd1697d",
+      "name": "Pensar1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.scenes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        1040
+      ],
+      "id": "f91433b4-a86a-4716-809b-1f6d796568fc",
+      "name": "Dividir"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/veo/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer d6f5fbbc4e65ebc9ac9f82c8b58cf817"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"prompt\":\"{{ $json.video_prompt.replace(/\\n/g, '\\\\n')\n    .replace(/\"/g, '\\\\\"') }}\",\n  \"model\": \"{{ $('Dividir').item.json.model }}\",\n  \"aspectRatio\": \"{{ $('Dividir').item.json.aspect_ratio_video }}\",\n  \"imageUrls\": \"{{ $('Obtener Imagen').item.json.images[0].url }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -992,
+        1040
+      ],
+      "id": "a5cbd404-36e4-4117-831a-13f784e4be76",
+      "name": "Crear Video"
+    },
+    {
+      "parameters": {
+        "amount": 200
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -704,
+        1040
+      ],
+      "id": "f53e56ac-3c26-4318-b6a4-54957f35a7da",
+      "name": "Esperar1",
+      "webhookId": "706ebb38-98f4-402e-9258-384b2747b0ae"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/veo/record-info",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer d6f5fbbc4e65ebc9ac9f82c8b58cf817"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -448,
+        1040
+      ],
+      "id": "26c95b1c-ba0b-4057-96a8-e7c30422c6b1",
+      "name": "Obtener Video"
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "file": "={{ $json.data.response.resultUrls[0] }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        1040
+      ],
+      "id": "b2635b9c-1474-4851-b0ec-9e78506f530a",
+      "name": "Enviar un video",
+      "webhookId": "955431bf-436c-4b4f-a3ae-1525e31b2dab",
+      "credentials": {
+        "telegramApi": {
+          "id": "7BiIsQngv6h2dyi1",
+          "name": "UGC Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        848
+      ],
+      "id": "dd89759e-bf99-4aad-903e-a70f0f4b4b5b",
+      "name": "Modelo de Chat OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        224
+      ],
+      "id": "607eb2bb-3f70-46d0-aa3e-4274f843952c",
+      "name": "Telegram Trigger",
+      "webhookId": "21de6a02-3fea-42be-a0b7-9dea1f1a6779",
+      "credentials": {
+        "telegramApi": {
+          "id": "7BiIsQngv6h2dyi1",
+          "name": "UGC Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu tarea: Crea prompts de video según las directrices de tu sistema.\n\nAsegúrate de que la imagen de referencia se represente con la MAYOR PRECISIÓN posible en las imágenes resultantes, especialmente todo el texto.\n\nPara cada una de las escenas, asegúrate de que el diálogo fluya de manera continua y tenga sentido. Y siempre haz que el personaje hable solo sobre el producto y sus beneficios basándose en lo que entiendes de la marca y cómo se usa. Así que si es una bebida, habla del sabor; si es un bolso, habla del diseño; si es tecnología, habla de sus características, y así sucesivamente.\n\nSi el personaje va a mencionar el nombre de la marca, hazlo solo en la PRIMERA escena.\n\nA menos que el usuario lo indique, no hagas que el personaje abra, coma o use el producto. solo lo está mostrando a la cámara.\n\nSi no se indica el número de videos, genera 1 escena.\n\n***\n\nEstas son las instrucciones del usuario\n{{ $('Telegram Trigger').item.json.message.caption }}\n***\n\nCantidad de videos a crear: inferido en función de su mensaje anterior. Cada video durará 8 segundos, así que calcula cuántos videos necesitas generar en función de la duración total deseada por el usuario\n\n***\nDescripción de la(s) imagen(es) de referencia. {{ $('Analizar imagen').item.json.content }}\n\nSolo usa esto para entender quién es el producto o el personaje, no lo uses como base para el diálogo.\n\n\n\n***\nLa relación de aspecto preferida del usuario: inferida en función de su mensaje anterior, el valor predeterminado es vertical si no se proporciona\n\nEl modelo preferido del usuario: inferido en función de su mensaje anterior, el valor predeterminado es veo3_fast si no se proporciona\n\nEl guion de diálogo preferido del usuario: inferido en función de su mensaje anterior, sugiere un guion\n\n\n***\nUsa la herramienta Pensar para verificar tu salida\n\n***\n- corregir Mensaje de error:\nRechazado por la política de contenido de Google (Tu prompt fue marcado por el sitio web por violar las políticas de contenido.). Revisa tu prompt/imagen o activa nuestra API de respaldo de Veo 3. Consulta la documentación para más detalles.\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=prompt_sistema: |\n  ## PROMPT DE SISTEMA: Generador de Prompts UGC-Style Veo3/Veo3_fast (Solo Video)\n\n  Eres un agente de IA de UGC (Contenido Generado por el Usuario).\n  Tu tarea: Toma la imagen de referencia o el producto en la imagen de referencia y colócalo en escenas realistas y casuales como si hubieran sido capturadas por creadores de contenido o influencers cotidianos.\n\n  Todas las salidas deben sentirse **naturales, espontáneas y sin pulir** — evitando aspectos profesionales o demasiado montados. Esto significa:\n\n    - Realismo cotidiano con escenarios auténticos y cercanos\n    - Estilo de foto/video de iPhone de calidad amateur\n    - Encuadre e iluminación ligeramente imperfectos\n    - Poses espontáneas y expresiones genuinas\n    - Imperfecciones visibles (manchas, pelo desordenado, piel desigual)\n    - Entornos del mundo real dejados tal cual (desorden, fondos concurridos)\n\n  Necesitamos que estos videos se vean naturales y reales. Así que en los prompts, haz que el parámetro de la Cámara siempre use palabras clave como estas: fotos de iPhone de aficionado sin pretensiones, imagen de reddit, video de snapchat, selfie casual con iPhone, encuadre ligeramente desigual, publicación auténtica, ligeramente borrosa, foto de teléfono de calidad amateur\n\n  Si el diálogo no es proporcionado por el usuario o se te pide explícitamente que lo crees, genera una línea casual y conversacional de menos de 150 caracteres, como si una persona estuviera hablando naturalmente con un amigo sobre el producto. Evita un lenguaje demasiado formal o de ventas. El tono debe sentirse auténtico, espontáneo y cercano, coincidiendo con el estilo UGC. Usa ... para indicar pausas y evita caracteres especiales como guiones largos o cortos.\n\n\n  A – Pedir:\n    Genera **solo instrucciones de generación de video** para modelos de IA (sin prompts de imagen). Infiere las relaciones de aspecto del contexto vertical/horizontal; por defecto, vertical si no se especifica.\n\n    **Regla de recuento de escenas:**\n    - Lee la duración total del video solicitada por el usuario y la duración por video (en segundos).\n    - Calcula el número requerido de videos dividiendo la duración total por la duración por video, redondeando **hacia arriba** al entero más cercano.\n    - Genera **exactamente ese número de escenas**.\n    - Nunca generes más o menos escenas de las solicitadas.\n\n  G – Guía:\n    - Sigue siempre los principios de realismo casual de estilo UGC enumerados anteriormente.\n    - Asegura la diversidad de género, etnia y color de pelo cuando corresponda. Por defecto, actores de 21 a 38 años a menos que se especifique lo contrario.\n    - Usa la lista de escenas proporcionada cuando esté disponible.\n    - No uses comillas dobles en ninguna parte de los prompts.\n\n  E – Ejemplos:\n    buenos_ejemplos:\n      - |\n        {\n          \"scenes\": [\n            {\n              \"video_prompt\": \"diálogo: así que TikTok me hizo comprar esto... honestamente es la cerveza de frutas con mejor sabor en Sídney y donan las ganancias a la caridad...\\nacción: el personaje se sienta en el asiento del conductor de un coche aparcado, sosteniendo la lata de cerveza casualmente mientras habla\\ncámara: video selfie de iPhone de aficionado, encuadre desigual, luz diurna natural\\nemoción: muy feliz, emoción casual\\ntipo: veo3_fast\",\n              \"aspect_ratio_video\": \"9:16\",\n              \"model\": \"veo3_fast\"\n            }\n          ]\n        }\n\n  N – Notación:\n    - La salida final es un array `\"scenes\"` en el nivel raíz.\n    - El array debe contener **exactamente `recuento_de_escenas`** objetos, donde `recuento_de_escenas` es el número calculado por el usuario.\n    - Cada escena contiene:\n      - `video_prompt` → YAML en formato de cadena con: diálogo, emoción, tipo_de_voz, acción, personaje, escenario, cámara\n      - `aspect_ratio_video` → \"9:16\" o \"16:9\" (predeterminado vertical → 9:16)\n      - `model` → \"veo3\" o \"veo3_fast\"\n\n  T – Herramientas:\n    - Herramienta Pensar: Verifica dos veces la salida para asegurarte de que esté completa, sea diversa, se adhiera al estilo y que el número de escenas coincida exactamente con el recuento solicitado.\n\n- corregir Mensaje de error:\nRechazado por la política de contenido de Google (Tu prompt fue marcado por el sitio web por violar las políticas de contenido.). Revisa tu prompt/imagen o activa nuestra API de respaldo de Veo 3. Consulta la documentación para más detalles."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -128,
+        624
+      ],
+      "id": "00aebb18-6665-49c2-8dff-821e23a7c765",
+      "name": "Agente Creador de Video"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        656
+      ],
+      "id": "8a849dc1-9322-4857-b8e5-574fb7c04a11",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        1056
+      ],
+      "id": "2c85765d-847c-4b90-bbd9-6ab732e14523",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"scenes\": [\n    {\n      \"video_prompt\": \"diálogo: ...\\nacción: ...\\ncámara: ...\\nemoción: ...\\ntipo_de_voz: ...\\npersonaje: ...\\nescenario: ...\",\n      \"aspect_ratio_video\": \"9:16\",\n      \"model\": \"veo3_fast\"\n    }\n  ]\n}\n",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        848
+      ],
+      "id": "51feba82-f40d-4f98-9899-be3a2bcc80e7",
+      "name": "Analizador de Salida Estructurada1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "ID del Bot": {
+      "main": [
+        [
+          {
+            "node": "Obtener Ruta de Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analizar imagen": {
+      "main": [
+        [
+          {
+            "node": "Enviar un mensaje de texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar un mensaje de texto": {
+      "main": [
+        [
+          {
+            "node": "Generador de Imágenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modelo de Chat OpenAI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generador de Imágenes",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pensar": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generador de Imágenes",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analizador de Salida Estructurada": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generador de Imágenes",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador de Imágenes": {
+      "main": [
+        [
+          {
+            "node": "Crear Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Imagen": {
+      "main": [
+        [
+          {
+            "node": "Esperar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar": {
+      "main": [
+        [
+          {
+            "node": "Obtener Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Ruta de Imagen": {
+      "main": [
+        [
+          {
+            "node": "Analizar imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Imagen": {
+      "main": [
+        [
+          {
+            "node": "Si",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Si": {
+      "main": [
+        [
+          {
+            "node": "Agente Creador de Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Esperar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pensar1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Creador de Video",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dividir": {
+      "main": [
+        [
+          {
+            "node": "Crear Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Video": {
+      "main": [
+        [
+          {
+            "node": "Esperar1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar1": {
+      "main": [
+        [
+          {
+            "node": "Obtener Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Video": {
+      "main": [
+        [
+          {
+            "node": "Enviar un video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modelo de Chat OpenAI1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Creador de Video",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "ID del Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Creador de Video": {
+      "main": [
+        [
+          {
+            "node": "Dividir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analizador de Salida Estructurada",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analizador de Salida Estructurada1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analizador de Salida Estructurada1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Agente Creador de Video",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bcbee295-110e-4e9c-96dc-44261b5d28bb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aac574544802a17aad902d42e8f7770e23d852adf6e8e0ac80531236fecac715"
+  },
+  "id": "2gZxCOEqsF3dIUc0",
+  "tags": []
+}

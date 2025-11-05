@@ -1,0 +1,403 @@
+{
+  "name": "Inmobiliaria Agente",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1472,
+        -160
+      ],
+      "id": "0dd85da6-6f49-4d5e-921f-049059a40ece",
+      "name": "Al hacer clic en 'Ejecutar flujo de trabajo'"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Lqp7-OUfYKA47ljUY2DX31tuJTmb22_pF0zStoiM1V8",
+          "mode": "list",
+          "cachedResultName": "Inmobiliaria Base de Datos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Lqp7-OUfYKA47ljUY2DX31tuJTmb22_pF0zStoiM1V8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Lqp7-OUfYKA47ljUY2DX31tuJTmb22_pF0zStoiM1V8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1216,
+        -160
+      ],
+      "id": "624e715d-f3e2-46e7-95d4-763eba653124",
+      "name": "Obtener Datos de Ventas",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "63RgPzTSFDrHAKRK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-5-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        48
+      ],
+      "id": "a6b3323a-dc05-4008-8f2b-9533882723f6",
+      "name": "GPT-5-mini",
+      "credentials": {
+        "openRouterApi": {
+          "id": "0TlekMl0BpABZAPm",
+          "name": "OpenRouter Conexión "
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# Resumen\nEres **Asesor Inmobiliario IA**, un experto en viviendas que ayuda a los usuarios a encontrar casas y pisos en España.  \nTienes acceso a una base de datos con información de 100 viviendas y a varias herramientas de búsqueda.\n\n---\n\n### Herramientas disponibles:\n1. **TodasLasFilas** – devuelve todas las viviendas de la base de datos.  \n2. **ConsultaCiudad(ciudad)** – devuelve todas las viviendas en una ciudad específica.  \n   - Ejemplo: `ConsultaCiudad(\"Madrid\")`  \n3. **ConsultaIDVivienda(id)** – devuelve la vivienda con un ID específico.  \n   - Ejemplo: `ConsultaIDVivienda(7450)`  \n4. **ConsultaPrecio(condición)** – devuelve viviendas filtradas por precio, solo pon como valor el precio exacto que ha dicho sin nada mñas.  \n   - Ejemplo: `ConsultaPrecio(\"200000\")` → todas las viviendas con precio inferior a 200.000 €  \n\n---\n\n### Instrucciones Centrales:\n- Usa las herramientas para buscar la información correcta, pero **nunca menciones en tus respuestas que has usado herramientas**.  \n- Responde siempre en **tono humano, natural y conversacional**, como un asesor inmobiliario hablando con un cliente.  \n- Si hay resultados:  \n  - Da un resumen breve (ejemplo: “Hay 3 pisos en Madrid en ese rango de precio. El más barato cuesta 133.000 €”).  \n  - Ofrece ampliar la información (“¿Quieres que te muestre las 3 viviendas con más detalle?”).  \n- Si no hay resultados:  \n  - Indícalo de manera amable (“Ahora mismo no hay pisos en Barcelona registrados en la base de datos”).  \n  - Ofrece alternativas (buscar otra ciudad, otro rango de precios, otro tipo de vivienda).  \n- Nunca inventes viviendas fuera de los datos.  \n\n---\n\n### Ejemplos de Respuesta:\n- **Usuario**: “¿Tenéis algún piso en Barcelona?”  \n  **Agente**: “Sí, tenemos 1 piso en Barcelona: está en Rambla, 164, con 3 habitaciones, 3 baños y un precio de 135.354 €. ¿Quieres que te muestre más detalles o que busque en otro rango de precio?”\n\n- **Usuario**: “Muéstrame casas en Madrid por menos de 200.000€”  \n  **Agente**: “Claro, en Madrid tenemos varias casas por debajo de 200.000 €. Una de ellas está en Gran Vía, con 3 habitaciones y un precio de 133.942 €. ¿Quieres que prepare una lista completa?”\n\n- **Usuario**: “¿Cuál es el precio promedio de los pisos en Valencia?”  \n  **Agente**: “El precio promedio de los pisos en Valencia es de 275.000 € aproximadamente. ¿Quieres que te muestre las opciones más económicas o las de gama alta?”\n\n---\n\n### Tu Misión:\n- Usa las herramientas para encontrar siempre la información precisa.  \n- Habla de forma humana, clara y cercana.  \n- Ofrece alternativas y mantén la conversación abierta.  \n- Nunca menciones las herramientas ni el proceso interno.  \n\nFecha/hora actual: {{ $now }}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -336,
+        -176
+      ],
+      "id": "421981e5-553e-4895-a600-c9702eeea9ad",
+      "name": "Agente Inmobiliario"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "KaNHYMUu1YXqT6qC",
+          "mode": "list",
+          "cachedResultName": "Base de Datos PRUEBA YT",
+          "cachedResultUrl": "/projects/ZClqDQRWxArIELVL/datatables/KaNHYMUu1YXqT6qC"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "idVivienda",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "limit": {}
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        128
+      ],
+      "id": "82929296-92f4-4751-8fbf-584b6ece871e",
+      "name": "ConsultaIDVivienda"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "KaNHYMUu1YXqT6qC",
+          "mode": "list",
+          "cachedResultName": "Base de Datos PRUEBA YT",
+          "cachedResultUrl": "/projects/ZClqDQRWxArIELVL/datatables/KaNHYMUu1YXqT6qC"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "ciudad",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Value', `la ciudad en la que ha pedido la vivienda el usuario`, 'string') }}"
+            }
+          ]
+        },
+        "limit": {}
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        128
+      ],
+      "id": "7e69ead8-88fd-4ded-b1a7-7da12a6af558",
+      "name": "ConsultaCiudad"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "KaNHYMUu1YXqT6qC",
+          "mode": "list",
+          "cachedResultName": "Base de Datos PRUEBA YT",
+          "cachedResultUrl": "/projects/ZClqDQRWxArIELVL/datatables/KaNHYMUu1YXqT6qC"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "precio",
+              "condition": "lte",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions1_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "limit": {}
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        64,
+        128
+      ],
+      "id": "298300bd-3560-4f36-840f-f492bdb52896",
+      "name": "ConsultaPrecio"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "KaNHYMUu1YXqT6qC",
+          "mode": "list",
+          "cachedResultName": "Base de Datos PRUEBA YT",
+          "cachedResultUrl": "/projects/ZClqDQRWxArIELVL/datatables/KaNHYMUu1YXqT6qC"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "idVivienda": "={{ $json.id }}",
+            "tipo_vivienda": "={{ $json.tipo_vivienda }}",
+            "ciudad": "={{ $json.ciudad }}",
+            "direccion": "={{ $json.direccion }}",
+            "precio": "={{ $json.precio }}",
+            "habitaciones": "={{ $json.habitaciones }}",
+            "banos": "={{ $json.banos }}",
+            "caracteristicas": "={{ $json.caracteristicas }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "idVivienda",
+              "displayName": "idVivienda",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "tipo_vivienda",
+              "displayName": "tipo_vivienda",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ciudad",
+              "displayName": "ciudad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "direccion",
+              "displayName": "direccion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "habitaciones",
+              "displayName": "habitaciones",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "banos",
+              "displayName": "banos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "precio",
+              "displayName": "precio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "caracteristicas",
+              "displayName": "caracteristicas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        -160
+      ],
+      "id": "29f0322c-1fc1-4629-b91a-44103200ebe3",
+      "name": "Insertar Datos de Ventas"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -592,
+        -176
+      ],
+      "id": "d2ee9f93-6e25-42ca-a2bf-d73b0a3bb396",
+      "name": "Cuando se recibe un mensaje de chat",
+      "webhookId": "534aa3d4-79aa-44bc-90a8-dadf37b5b3a8"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Al hacer clic en 'Ejecutar flujo de trabajo'": {
+      "main": [
+        [
+          {
+            "node": "Obtener Datos de Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Datos de Ventas": {
+      "main": [
+        [
+          {
+            "node": "Insertar Datos de Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-5-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Inmobiliario",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConsultaIDVivienda": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Inmobiliario",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConsultaCiudad": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Inmobiliario",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConsultaPrecio": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Inmobiliario",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Inmobiliario": {
+      "main": [
+        []
+      ]
+    },
+    "Cuando se recibe un mensaje de chat": {
+      "main": [
+        [
+          {
+            "node": "Agente Inmobiliario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "967a5155-5273-4be0-bdf3-2c943be8135c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aac574544802a17aad902d42e8f7770e23d852adf6e8e0ac80531236fecac715"
+  },
+  "id": "Xhefk19QvyUGCy26",
+  "tags": []
+}

@@ -1,0 +1,829 @@
+{
+  "name": "GoToHuman",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "posts",
+        "options": {
+          "destinationFieldName": "post"
+        }
+      },
+      "id": "687d4e36-dffc-4b3f-b736-0060d4738393",
+      "name": "Dividir",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1376,
+        256
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "posts",
+              "cssSelector": "article.item",
+              "returnValue": "html",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4a4bf5a3-c65d-4f36-a4b4-f2b7570d68f2",
+      "name": "Obtener HTML del elemento del feed",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        1200,
+        256
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "url": "https://blog.n8n.io/",
+        "options": {}
+      },
+      "id": "6e9f7e88-a395-4ce0-8d1a-c2a781d83139",
+      "name": "Obtener feed del blog de n8n",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        992,
+        256
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "post",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "link",
+              "cssSelector": ".item-title a",
+              "returnValue": "attribute",
+              "attribute": "href"
+            },
+            {
+              "key": "title",
+              "cssSelector": ".item-title a"
+            },
+            {
+              "key": "tags",
+              "cssSelector": ".item-tags a"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "602a7d4c-c588-4dd9-93a6-a1347196eb2c",
+      "name": "Extraer Título, Enlace y Etiqueta",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        1536,
+        256
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.articleUrl }}",
+        "options": {}
+      },
+      "id": "1b76343f-7748-434f-9d48-f1e7f881a75b",
+      "name": "Obtener HTML del Artículo",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1920,
+        256
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "b0860cc6-41fd-4de0-8604-cf6503c0e36a",
+      "name": "Modelo de Chat OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        2640,
+        448
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Se te pasará un artículo extraído de un blog de empresa. Por favor, resúmelo para destacar los temas clave, noticias, tendencias o mejores prácticas. ¡Asegúrate de usar formato markdown en tu respuesta! Todo en castellano\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "ac794f7e-aa49-417c-80d6-24de6a0093bf",
+      "name": "Resumir Artículo",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        2736,
+        256
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Obtener Artículo (amigable para LLM)').item.json.data }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "f869ab77-c344-4d66-bd51-a373598441a9",
+      "name": "Redactar Publicación de LinkedIn",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        1376,
+        592
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1797d7f-2a80-438a-8e87-2c6ebce0c3cf",
+              "name": "articleUrl",
+              "type": "string",
+              "value": "=https://blog.n8n.io{{ $json.link }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "8693b1e5-48ca-4baf-bb65-9a5a0630d6f3",
+      "name": "Enlace del Artículo",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1728,
+        256
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "person": "=",
+        "text": "={{ $json.responseValues.postDraft.value }}",
+        "shareMediaCategory": "ARTICLE",
+        "additionalFields": {
+          "originalUrl": "={{ $('Enlace del Artículo').item.json.articleUrl }}",
+          "title": "={{ $('Extraer Título, Enlace y Etiqueta').item.json.title }}"
+        }
+      },
+      "id": "81d8a924-5686-4ed0-91a9-db71aa859a35",
+      "name": "Crear una publicación",
+      "type": "n8n-nodes-base.linkedIn",
+      "position": [
+        2720,
+        592
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "rCP00LXBfwhYj1xb",
+          "name": "LINKEDIN CONEXIÓN VERIFICADA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0a995978-dc24-47d9-82d7-9e8b6cff072b",
+              "name": "prompt",
+              "type": "string",
+              "value": "Se te pasará un artículo extraído de un blog de empresa. Soy Víctor Pérez, un experto en Inteligencia Artificial y escribiré una publicación en LinkedIn por cada noticia que salga. Por favor, escribe una publicación atractiva basada en el artículo. Todo en castellano y usando mi estilo a la hora de escribir posts de LinkedIn:\n\nEjemplo de publicación mía para que veas el estilo:\n\n¿No sabes cómo aplicar la IA a tu empresa mientras otros ya disparan sus resultados?\n\nEl otro día fui al podcast de centros de estética #1 de España y expliqué 3 formas sencillas de implementar IA que cualquier negocio puede aplicar HOY.\n\nSin códigos. Sin inversiones enormes. Sin conocimientos técnicos.\n\n👇 Aquí lo que compartí (y está transformando empresas mientras otras se quedan atrás):\n\n1️⃣ Asistentes de voz que nunca dejan escapar un cliente\nImagina un comercial que:\n- Trabaja 24/7 sin descanso.\n- Contesta a los 5 segundos cuando el interés está al máximo.\n- Nunca pide aumentos ni se enferma.\n- Convierte exactamente igual cada vez.\n- Responde a cualquier objeción sin titubear.\n- El cliente ni siquiera detecta que es IA.\n\n2️⃣ Atención al cliente automatizada que enamora\nEste sistema:\n- Responde WhatsApp/Instagram al instante (incluso a las 3 AM).\n- Agenda citas directamente en tu calendario.\n- Resuelve dudas sin intervención humana.\n- Convierte más al responder en el momento clave.\n- Lo mejor: responde como un humano real, no con textos robóticos.\n\n3️⃣ Creación de contenido sin bloqueos\n- Con solo 5 minutos de video tuyo:\n- Crea contenido para todo el mes.\n- Genera un avatar con tu voz y expresiones.\n- Supera el miedo a cámara de una vez.\n- Mantiene tu estilo personal intacto.\n- El secreto que nadie cuenta:\n- No intentes que un solo sistema lo haga todo.\n\nEspecializa cada IA para una tarea concreta.\n\nLa ventana de oportunidad es AHORA.\n\n¿Prefieres actuar o ver cómo tu competencia lo hace primero?\n\n👇 Si quieres saber más sobre todo esto, mira el video del primer comentario\n\nahora inspírate en esto para crear la nueva publicación sobre la nueva información."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "66e9cc89-f16b-4d1d-b856-8b2750f6ce7c",
+      "name": "Establecer Prompt Inicial",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1168,
+        592
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "f7de5b2c-bb7e-468b-90ab-0b6287df0c10",
+      "name": "Modelo de Chat OpenAI1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        1408,
+        752
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "NqIUOK3Y1Eg1Qg0e",
+          "name": "OpenAI API New 13/01/25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e5badd10-e52c-41e7-a18b-701cb0d4e920",
+      "name": "Iterar Sobre Elementos",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        816,
+        928
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "eb5d8644-4523-45b1-bda0-4864b9818805",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.response }}",
+                    "rightValue": "approved"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Aprobado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "2f338ad5-ae15-4750-b41d-5864640999c9",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.response }}",
+                    "rightValue": "rejected"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Rechazado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "746224d7-8a61-412e-8d83-8ff15d895857",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "chat"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Reintentar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "31666e12-b5a8-407d-a674-e804c3b6f77a",
+      "name": "Conmutador",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        1984,
+        576
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "622c3ac0-d1e4-4a3f-aff2-3636eb1af992",
+              "name": "prompt",
+              "type": "string",
+              "value": "={{ $json.messages[0].content }}"
+            },
+            {
+              "id": "4ed769bf-cf03-4d5c-b582-fd0bd601e4a3",
+              "name": "reviewToUpdate",
+              "type": "string",
+              "value": "={{ $json.reviewId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ca1b549c-3272-43ee-af9e-d45452837389",
+      "name": "Reintentar",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2112,
+        832
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "url": "=https://r.jina.ai/{{ $('Enlace del Artículo').item.json.articleUrl }}",
+        "options": {}
+      },
+      "id": "e6ef6e82-a23d-4575-8913-32d2018b25f3",
+      "name": "Obtener Artículo (amigable para LLM)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        256
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "reviewTemplateID": {
+          "__rl": true,
+          "value": "kuULzaFWzGV9rM6OeiBv",
+          "mode": "list",
+          "cachedResultName": "n8n news to post (kuULzaFWzGV9rM6OeiBv)"
+        },
+        "fields": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "link": "={{ [{url: $('Enlace del Artículo').item.json.articleUrl, label: $('Enlace del Artículo').item.json.title }] }}",
+            "timestamp": "={{ new Date($('Extraer fecha y hora de publicación').item.json.published).toDateTime().toRelative() }}",
+            "summary": "={{ $('Resumir Artículo').item.json.text }}",
+            "postDraft": "={{ {ai:{prompt: $('Establecer Prompt Inicial').item.json.prompt }, content: $json.text} }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "type": "array",
+              "id": "link",
+              "displayName": "link (urlLinks)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "type": "string",
+              "id": "timestamp",
+              "displayName": "timestamp (label)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "type": "string",
+              "id": "summary",
+              "displayName": "summary (markdown)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "type": "string",
+              "id": "postDraft",
+              "displayName": "postDraft (text)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "additionalFields": {
+          "updateForReviewId": "={{ $('Reintentar').isExecuted ? $('Retry').item.json.reviewToUpdate : null }}"
+        }
+      },
+      "id": "6df83ca6-cdcc-450c-a665-84ce9418fbe9",
+      "name": "Aprobación Humana",
+      "type": "@gotohuman/n8n-nodes-gotohuman.gotoHuman",
+      "position": [
+        1728,
+        592
+      ],
+      "webhookId": "e1a973b2-5a8d-4eea-8dcf-8ff52e097849",
+      "typeVersion": 1,
+      "credentials": {
+        "gotoHumanApi": {
+          "id": "uvvg3C0GElzmGxsR",
+          "name": "gotoHuman account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        784,
+        80
+      ],
+      "id": "57829a4f-8bdc-4596-83c7-ead8010adf13",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        752,
+        256
+      ],
+      "id": "53f623f0-2d36-4586-9548-bb8117b3a3de",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        256
+      ],
+      "id": "f4b3ce28-44a7-4a69-b1b0-7b63980d228b",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "published",
+              "cssSelector": "meta[property=\"article:published_time\"]",
+              "returnValue": "attribute",
+              "attribute": "content"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "82a48676-8b4e-4139-a05f-5388e9fe5684",
+      "name": "Extraer fecha y hora de publicación",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        2096,
+        256
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "content": "![Ejemplo de Fuente](https://cdn.prod.website-files.com/6605a2979ff17b2cd1939cd4/6877ff9cd93f480ff6eb4def_677c04b5cd6a77eb434526bf9c0eaaca_gotoHuman%20full%20logo.svg)",
+        "height": 288,
+        "width": 256,
+        "color": 4
+      },
+      "id": "17e832ed-3d73-481d-9aaa-27bb2f163664",
+      "name": "Nota Adhesiva6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1648,
+        496
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Reintentar": {
+      "main": [
+        [
+          {
+            "node": "Redactar Publicación de LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conmutador": {
+      "main": [
+        [
+          {
+            "node": "Crear una publicación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Iterar Sobre Elementos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reintentar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dividir": {
+      "main": [
+        [
+          {
+            "node": "Extraer Título, Enlace y Etiqueta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enlace del Artículo": {
+      "main": [
+        [
+          {
+            "node": "Obtener HTML del Artículo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear una publicación": {
+      "main": [
+        [
+          {
+            "node": "Iterar Sobre Elementos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aprobación Humana": {
+      "main": [
+        [
+          {
+            "node": "Conmutador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iterar Sobre Elementos": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Establecer Prompt Inicial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modelo de Chat OpenAI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Resumir Artículo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumir Artículo": {
+      "main": [
+        [
+          {
+            "node": "Iterar Sobre Elementos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener HTML del Artículo": {
+      "main": [
+        [
+          {
+            "node": "Extraer fecha y hora de publicación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modelo de Chat OpenAI1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Redactar Publicación de LinkedIn",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Establecer Prompt Inicial": {
+      "main": [
+        [
+          {
+            "node": "Redactar Publicación de LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redactar Publicación de LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Aprobación Humana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener feed del blog de n8n": {
+      "main": [
+        [
+          {
+            "node": "Obtener HTML del elemento del feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener HTML del elemento del feed": {
+      "main": [
+        [
+          {
+            "node": "Dividir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Título, Enlace y Etiqueta": {
+      "main": [
+        [
+          {
+            "node": "Enlace del Artículo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Artículo (amigable para LLM)": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Obtener feed del blog de n8n",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Resumir Artículo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer fecha y hora de publicación": {
+      "main": [
+        [
+          {
+            "node": "Obtener Artículo (amigable para LLM)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "74c4dfd0-2c5e-4878-8dc6-31188dbc8ac4",
+  "meta": {
+    "instanceId": "aac574544802a17aad902d42e8f7770e23d852adf6e8e0ac80531236fecac715"
+  },
+  "id": "Phg47FAvTQKUGsFy",
+  "tags": []
+}

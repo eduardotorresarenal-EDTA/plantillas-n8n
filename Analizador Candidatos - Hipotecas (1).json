@@ -1,0 +1,614 @@
+{
+  "name": "Analizador Candidatos - Hipotecas",
+  "nodes": [
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"fortalezas_candidato\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"debilidades_candidato\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"factor_riesgo_nivel\": {\n      \"type\": \"string\",\n      \"enum\": [\"Bajo\", \"Medio\", \"Alto\"]\n    },\n    \"factor_riesgo_peor_escenario\": {\n      \"type\": \"string\"\n    },\n    \"factor_recompensa_nivel\": {\n      \"type\": \"string\",\n      \"enum\": [\"Bajo\", \"Medio\", \"Alto\"]\n    },\n    \"factor_recompensa_mejor_escenario\": {\n      \"type\": \"string\"\n    },\n    \"factor_recompensa_plazo\": {\n      \"type\": \"string\",\n      \"enum\": [\"Corto plazo\", \"Largo plazo\"]\n    },\n    \"puntuacion_adecuacion_general\": {\n      \"type\": \"integer\",\n      \"minimum\": 0,\n      \"maximum\": 10\n    },\n    \"justificacion_puntuacion\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"fortalezas_candidato\",\n    \"debilidades_candidato\",\n    \"factor_riesgo_nivel\",\n    \"factor_riesgo_peor_escenario\",\n    \"factor_recompensa_nivel\",\n    \"factor_recompensa_mejor_escenario\",\n    \"factor_recompensa_plazo\",\n    \"puntuacion_adecuacion_general\",\n    \"justificacion_puntuacion\"\n  ]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        592,
+        128
+      ],
+      "id": "aa8edb79-b6f5-44b2-b445-27c96dbbc47d",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "o4-mini",
+          "mode": "list",
+          "cachedResultName": "o4-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        256,
+        128
+      ],
+      "id": "023549b2-e32f-43ef-96c3-58e4768b9f6c",
+      "name": "o4-mini",
+      "credentials": {
+        "openAiApi": {
+          "id": "4UK5Uvwo5Ws5v5KH",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\n## Respuestas del usuario:\n- **Nombre completo:** `{{ $json.nombre }}`\n- **Email de contacto:** `{{ $json.email }}`\n- **LinkedIn URL:** `{{ $json.linkedinUrl }}`\n- **¿Presencial en Barcelona?:** `{{ $json.presencialBCN }}`\n- **Disponibilidad de incorporación:** `{{ $json.disponibilidad }}`\n- **Años en sector inmobiliario:** `{{ $json.expSector }}`\n- **Años negociando con bancos:** `{{ $json.expNegociacion }}`\n- **Experiencia liderando equipos:** `{{ $json.liderEquipo }}`\n- **Nivel de inglés:** `{{ $json.nivelIngles }}`\n- **Actualmente buscando activamente empleo?:** `{{ $json.buscandoActivo }}`\n- **Comentario adicional:** `{{ $json.comentario }}`\n- **Fecha de envío:** `{{ $json.fecha }}`\n\n\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Descripción General\nEres un reclutador experto en el sector hipotecario y en selección de perfiles financieros. Te entregaré la descripción de un puesto de **Responsable del Departamento de Hipotecas en XXXX (Barcelona)** y los datos crudos de un candidato. Tu tarea es evaluar en detalle la candidatura contra la oferta de trabajo, identificando puntos fuertes, debilidades, riesgos y recompensas, y asignando una puntuación de compatibilidad (0–10). Usa sólo la información proporcionada; no hagas suposiciones sobre datos que no aparezcan. Sigue exactamente este esquema de respuesta:\n\n\nConcéntrate específicamente en qué tan bien coincide el candidato con los requisitos clave y el perfil ideal descritos en la oferta de trabajo. Evalúa tanto la alineación de habilidades técnicas como la comprensión del contexto empresarial. Utiliza un razonamiento basado en el contenido real del currículum y la oferta de empleo; evita hacer suposiciones.\n\n## Resultado\nTu informe debe seguir exactamente este formato:\n\n**Fortalezas del Candidato:**  \nEnumera las principales fortalezas o cualificaciones relevantes que aporta el candidato. Sé específico.\n\n**Debilidades del Candidato:**  \nEnumera las áreas donde el candidato tiene carencias o no está alineado con la descripción del puesto.\n\n**Factor de Riesgo:**  \n- Asigna un nivel de riesgo (Bajo / Medio / Alto)  \n- Explica el peor escenario posible si se contrata a este candidato.\n\n**Factor de Recompensa:**  \n- Asigna un nivel de recompensa (Bajo / Medio / Alto)  \n- Describe el mejor escenario posible: ¿qué valor podría aportar este candidato?  \n- ¿Parece ser una opción a corto o largo plazo?\n\n**Puntuación General de Compatibilidad (0–10):**  \nAsigna un número entre 0 (muy mala coincidencia) y 10 (coincidencia perfecta). No uses decimales.\n\n**Justificación de la Puntuación:**  \nExplica claramente por qué este candidato recibió esa puntuación. Haz referencia a contenido específico del currículum y cómo se alinea o no con la oferta de trabajo.\n\n\n## Descripción del Puesto\n🚀 ¡XXXX busca Responsable del Departamento de Hipotecas! 🏡\n\nEn XXXX queremos fichar al mejor talento para liderar nuestro nuevo Departamento de Hipotecas en Barcelona. Si cumples estos requisitos, ¡queremos conocerte!\n\n📌 Tus desafíos\n- Negociar las mejores condiciones hipotecarias con bancos nacionales e internacionales  \n- Diseñar procesos y liderar un equipo de agentes para compradores locales y extranjeros  \n- Asegurar tiempos de respuesta rápidos y un servicio de primer nivel  \n\n✅ Requisitos imprescindibles\n- Mínimo **2 años** de experiencia en banca tradicional o fintech gestionando hipotecas  \n- Español **nativo** e inglés **fluido**  \n- Experiencia en **negociación bancaria**  \n- Disponibilidad para **trabajo presencial** en Barcelona  \n- Valorable haber **liderado equipos** o tener **capacidad de gestión**\n\n\nIMPORTANTE: la salida **debe** ser un único objeto JSON que valide exactamente contra este JSON Schema. No añadas propiedades extra ni cambies nombres:\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"fortalezas_candidato\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"debilidades_candidato\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"factor_riesgo_nivel\": {\n      \"type\": \"string\",\n      \"enum\": [\"Bajo\", \"Medio\", \"Alto\"]\n    },\n    \"factor_riesgo_peor_escenario\": {\n      \"type\": \"string\"\n    },\n    \"factor_recompensa_nivel\": {\n      \"type\": \"string\",\n      \"enum\": [\"Bajo\", \"Medio\", \"Alto\"]\n    },\n    \"factor_recompensa_mejor_escenario\": {\n      \"type\": \"string\"\n    },\n    \"factor_recompensa_plazo\": {\n      \"type\": \"string\",\n      \"enum\": [\"Corto plazo\", \"Largo plazo\"]\n    },\n    \"puntuacion_adecuacion_general\": {\n      \"type\": \"integer\",\n      \"minimum\": 0,\n      \"maximum\": 10\n    },\n    \"justificacion_puntuacion\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"fortalezas_candidato\",\n    \"debilidades_candidato\",\n    \"factor_riesgo_nivel\",\n    \"factor_riesgo_peor_escenario\",\n    \"factor_recompensa_nivel\",\n    \"factor_recompensa_mejor_escenario\",\n    \"factor_recompensa_plazo\",\n    \"puntuacion_adecuacion_general\",\n    \"justificacion_puntuacion\"\n  ]\n}\n\n\nSi la respuesta no cumple el esquema, recupérate y devuelve solo el JSON válido."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -112
+      ],
+      "id": "a67a9f1f-c19b-47ee-9de1-ed7cce11e83b",
+      "name": "Agente Reclutador"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1lKjBdFy0fiW07VGQT8TY-UiZUR5gDbLbRu9--MSfPa4",
+          "mode": "list",
+          "cachedResultName": "Candidatos Post-Anáslis IA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lKjBdFy0fiW07VGQT8TY-UiZUR5gDbLbRu9--MSfPa4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PhkH8oUnbrll_TEJfEblAob2pWzkLxklVA0pajTEdNM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Debilidades": "=1. {{ $json.output.debilidades_candidato[0] }}\n2. {{ $json.output.debilidades_candidato[1] }}\n3. {{ $json.output.debilidades_candidato[2] }}\n4. {{ $json.output.debilidades_candidato[3] }}\n5. {{ $json.output.debilidades_candidato[4] }}",
+            "Justificación": "={{ $json.output.justificacion_puntuacion }}",
+            "Puntuación General": "={{ $json.output.puntuacion_adecuacion_general }}",
+            "Mejor escenario": "={{ $json.output.factor_recompensa_mejor_escenario }}",
+            "Factor de Recompensa": "={{ $json.output.factor_recompensa_nivel }}",
+            "Factor de Riesgo": "={{ $json.output.factor_riesgo_nivel }}",
+            "Peor escenario": "={{ $json.output.factor_riesgo_peor_escenario }}",
+            "Marca temporal": "={{ $('Set Variables').item.json.fecha }}",
+            "Nombre completo": "={{ $('Set Variables').item.json.nombre }}",
+            "Email de contacto": "={{ $('Set Variables').item.json.email }}",
+            "Teléfono de contacto": "={{ $('Set Variables').item.json.telefono }}",
+            "Enlace a tu perfil de LinkedIn": "={{ $('Set Variables').item.json.linkedinUrl }}",
+            "¿Puedes trabajar 100 % presencial en Barcelona?": "={{ $('Set Variables').item.json.presencialBCN }}",
+            "Años de experiencia en el sector inmobiliario": "={{ $('Set Variables').item.json.expSector }}",
+            "¿Cuándo podrías incorporarte?": "={{ $('Set Variables').item.json.disponibilidad }}",
+            "¿Has liderado equipos de trabajo?": "={{ $('Set Variables').item.json.liderEquipo }}",
+            "Nivel de inglés": "={{ $('Set Variables').item.json.nivelIngles }}",
+            "¿Actualmente estás buscando activamente un nuevo reto profesional?": "={{ $('Set Variables').item.json.buscandoActivo }}",
+            "Años de experiencia negociando condiciones hipotecarias con bancos": "={{ $('Set Variables').item.json.expNegociacion }}",
+            "¿Hay algún otro dato o aspecto relevante que quieras compartir en tu solicitud?": "={{ $('Set Variables').item.json.comentario }}",
+            "Fortalezas": "=1. {{ $json.output.fortalezas_candidato[0] }}\n2. {{ $json.output.fortalezas_candidato[1] }}\n3. {{ $json.output.fortalezas_candidato[2] }}\n4. {{ $json.output.fortalezas_candidato[3] }}\n5. {{ $json.output.fortalezas_candidato[4] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Marca temporal",
+              "displayName": "Marca temporal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre completo",
+              "displayName": "Nombre completo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email de contacto",
+              "displayName": "Email de contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Teléfono de contacto",
+              "displayName": "Teléfono de contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Enlace a tu perfil de LinkedIn",
+              "displayName": "Enlace a tu perfil de LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "¿Puedes trabajar 100 % presencial en Barcelona?",
+              "displayName": "¿Puedes trabajar 100 % presencial en Barcelona?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "¿Cuándo podrías incorporarte?",
+              "displayName": "¿Cuándo podrías incorporarte?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Años de experiencia en el sector inmobiliario",
+              "displayName": "Años de experiencia en el sector inmobiliario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Años de experiencia negociando condiciones hipotecarias con bancos",
+              "displayName": "Años de experiencia negociando condiciones hipotecarias con bancos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "¿Has liderado equipos de trabajo?",
+              "displayName": "¿Has liderado equipos de trabajo?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nivel de inglés",
+              "displayName": "Nivel de inglés",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "¿Actualmente estás buscando activamente un nuevo reto profesional?",
+              "displayName": "¿Actualmente estás buscando activamente un nuevo reto profesional?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "¿Hay algún otro dato o aspecto relevante que quieras compartir en tu solicitud?",
+              "displayName": "¿Hay algún otro dato o aspecto relevante que quieras compartir en tu solicitud?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fortalezas",
+              "displayName": "Fortalezas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Debilidades",
+              "displayName": "Debilidades",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Factor de Riesgo",
+              "displayName": "Factor de Riesgo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Peor escenario",
+              "displayName": "Peor escenario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Factor de Recompensa",
+              "displayName": "Factor de Recompensa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Mejor escenario",
+              "displayName": "Mejor escenario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Puntuación General",
+              "displayName": "Puntuación General",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Justificación",
+              "displayName": "Justificación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        752,
+        -112
+      ],
+      "id": "cdeaa778-836d-4235-902c-683a18da5eca",
+      "name": "Añadir Datos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KbIBaAz9GQ5tsDAy",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "formulario-hipotecas",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        -112
+      ],
+      "id": "7b9114f8-66a2-4d00-9f4f-fe1922bf6392",
+      "name": "Webhook",
+      "webhookId": "4e3d599c-ace6-434e-a30e-2a1179fc108c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4af35663-68b1-4ea1-9d59-ea2e60c26036",
+              "leftValue": "={{ $json['Puntuación General'] }}",
+              "rightValue": 7,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        -112
+      ],
+      "id": "524053a4-8b7b-4784-b0a8-8034050b6949",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "TU EMAIL",
+        "subject": "=📬 Nuevo candidato preseleccionado: {{ $('Set Variables').item.json.nombre }}",
+        "emailType": "text",
+        "message": "=Buenas,\n\nSe ha detectado un nuevo candidato con potencial para el puesto de Responsable del Departamento de Hipotecas:\n\nEstos son sus datos:\n\nNombre: {{ $json['Nombre completo'] }}\nEmail: {{ $json['Email de contacto'] }}\nTeléfono: {{ $json['Teléfono de contacto'] }}\nLinkedIn: {{ $json['Enlace a tu perfil de LinkedIn'] }}\nDisponibilidad: {{ $json['¿Puedes trabajar 100 % presencial en Barcelona?'] }}\nAños en sector inmobiliario: {{ $json['Años de experiencia en el sector inmobiliario'] }}\nAños negociando condiciones hipotecarias: {{ $json['Años de experiencia negociando condiciones hipotecarias con bancos'] }}\nLiderazgo de equipos: {{ $json['¿Has liderado equipos de trabajo?'] }}\nNivel de inglés: {{ $json['Nivel de inglés'] }}\nAbierto a trabajar: {{ $json['¿Actualmente estás buscando activamente un nuevo reto profesional?'] }}\n\nComentario adicional: {{ $json['¿Hay algún otro dato o aspecto relevante que quieras compartir en tu solicitud?'] }}\n\n\nEste es mi análisis del candidato:\n\nFortalezas del Candidato:\n{{ $('Añadir Datos').item.json.Fortalezas }}\n\nDebilidades del Candidato:\n{{ $('Añadir Datos').item.json.Debilidades }}\n\nFactor de Riesgo:  \n- Nivel: {{ $('Añadir Datos').item.json['Factor de Recompensa'].Nivel }}\n- Peor Escenario: {{ $('Añadir Datos').item.json['Peor escenario'] }}\n\nFactor de Recompensa: \n- Nivel: {{ $('Añadir Datos').item.json['Factor de Riesgo'] }}\n- Mejor Escenario: {{ $('Añadir Datos').item.json['Mejor escenario'] }}\n\nPuntuación General de Compatibilidad (0–10): \n{{ $('Añadir Datos').item.json['Puntuación General'] }}\n\nJustificación de la Puntuación: \n{{ $('Añadir Datos').item.json['Justificación'] }}\n\nPor favor, revisad la solicitud completa y avanzad con la entrevista si procede.\n\n¡Saludos!\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1200,
+        -240
+      ],
+      "id": "9aa7de32-ce2c-4136-8df3-ea144bed805d",
+      "name": "Gmail",
+      "webhookId": "65e4d3c0-a67a-4938-a50c-fef7c95131b4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5aWfknJ0iiZjWH4a",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -16
+      ],
+      "id": "7bba9bf3-7515-4c2d-b3a5-6299fcaaf04e",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "80ad62de-e59e-4e09-b28a-418056925909",
+              "name": "nombre",
+              "value": "={{ $json.body.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "a9e05de7-368b-4de9-ab44-4f544b4425fc",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "b9903b22-9828-4922-b133-54ea38d039ca",
+              "name": "linkedinUrl",
+              "value": "={{ $json.body.linkedinUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "211977cf-5d87-4393-a5d5-49439a0972fc",
+              "name": "presencialBCN",
+              "value": "={{ $json.body.presencialBCN }}",
+              "type": "string"
+            },
+            {
+              "id": "ffebbda2-1662-4a72-ad88-d2fab742f676",
+              "name": "disponibilidad",
+              "value": "={{ $json.body.disponibilidad }}",
+              "type": "string"
+            },
+            {
+              "id": "4a3cd0b5-8750-4de0-b584-2a6ba53b09e9",
+              "name": "expSector",
+              "value": "={{ $json.body.expSector }}",
+              "type": "string"
+            },
+            {
+              "id": "7b0b23da-3953-44ab-b64d-18094a7ce0d5",
+              "name": "expNegociacion",
+              "value": "={{ $json.body.expNegociacion }}",
+              "type": "string"
+            },
+            {
+              "id": "681d16d0-198f-4a90-905e-3b20050c6aad",
+              "name": "liderEquipo",
+              "value": "={{ $json.body.liderEquipo }}",
+              "type": "string"
+            },
+            {
+              "id": "7e037e0d-44ca-49ec-b0b8-93cc98b5eb2e",
+              "name": "nivelIngles",
+              "value": "={{ $json.body.nivelIngles }}",
+              "type": "string"
+            },
+            {
+              "id": "d6644220-a1e9-42cd-ad37-e476b98b09f3",
+              "name": "buscandoActivo",
+              "value": "={{ $json.body.buscandoActivo }}",
+              "type": "string"
+            },
+            {
+              "id": "5ef4c173-d9e3-489c-b77f-a4a181a1c89c",
+              "name": "comentario",
+              "value": "={{ $json.body.comentario }}",
+              "type": "string"
+            },
+            {
+              "id": "358714a5-16b6-4cc2-8958-ead5f6848204",
+              "name": "fecha",
+              "value": "={{ $json.body.timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "eb700af2-46c3-4c2e-82f9-f1e9b454a847",
+              "name": "telefono",
+              "value": "={{ $json.body.telefono }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        -112
+      ],
+      "id": "6b7b9706-0418-4f96-ac39-b611b482cc4e",
+      "name": "Set Variables"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Agente Reclutador",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "o4-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Reclutador",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Reclutador": {
+      "main": [
+        [
+          {
+            "node": "Añadir Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Añadir Datos": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Agente Reclutador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ad93a8a8-bbc3-4302-9966-bbb7bfb1821a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b5ebccf4b9d0aeda3a9b3a21af5b8552c95089871dc1c39705ebb4d89e8e3599"
+  },
+  "id": "MctLTkugSKzGE2oT",
+  "tags": []
+}

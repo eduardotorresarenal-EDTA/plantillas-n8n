@@ -1,0 +1,405 @@
+{
+  "name": "Automatización Facturas - Ejemplo YT",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1LRM-TT6ls4_a8KbxjsptDJIqV1MJpXkQ",
+          "mode": "list",
+          "cachedResultName": "Facturas",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1LRM-TT6ls4_a8KbxjsptDJIqV1MJpXkQ"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -80
+      ],
+      "id": "77b03743-006a-4cd8-b213-ca22cd5dd38e",
+      "name": "Nuevo Archivo",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "TaBPs2EKMDPLVM3i",
+          "name": "Google Drive - Funciona"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "1d0787ca-af38-4b16-885e-a62eb722c065",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -160
+      ],
+      "id": "b8817fce-c9ca-4069-9b09-3566d00d8e39",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        160,
+        80
+      ],
+      "id": "01f5b588-593c-4e1a-acab-1a33bb6fb904",
+      "name": "Descargar Archivo",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "TaBPs2EKMDPLVM3i",
+          "name": "Google Drive - Funciona"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "destinationKey": "base64",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        368,
+        80
+      ],
+      "id": "30ed02db-301e-46de-a4e0-7012ed2a1e1b",
+      "name": "Convertir a base64"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyA_2ns1dn0zCIwSgyQqTg8maxJ6W93MOKE"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"inlineData\": {\n            \"mimeType\": \"{{ $('Nuevo Archivo').item.json.mimeType }}\",\n            \"data\": \"{{ $json.base64 }}\"\n          }\n        },\n        {\n          \"text\": \"Nuestra empresa es Vystral, destinataria de la factura.\\\\n\\\\nA partir del documento de factura adjunto, extrae y devuelve un JSON que incluya los campos en este orden preciso:\\\\n\\\\n1. Fecha de emisión: Fecha en formato DD/MM/AAAA (ej. 15/11/2025).\\\\n2. Categoría: Una de estas opciones:\\\\n   • Costes de IT y Software\\\\n   • Telefonía y Comunicaciones\\\\n   • Material de Oficina\\\\n   • Viajes y Alojamiento\\\\n   • Marketing y Publicidad\\\\n   • Honorarios por Servicios\\\\n   • Suscripciones y Membresías\\\\n   • Formación y Educación\\\\n   • Suministros y Alquileres\\\\n   • Servicios Profesionales\\\\n3. Emisor: Nombre de la entidad que figura como emisor en la factura.\\\\n4. Descripción: Breve descripción del bien o servicio prestado.\\\\n5. Importe neto (sin IVA): Valor numérico sin símbolo de moneda, con coma como separador decimal (p.ej. \\\\\\\"11,40\\\\\\\").\\\\n6. Tipo de IVA (%): Número con coma y sin \\\\\\\"%\\\\\\\" (por ejemplo \\\\\\\"30,0\\\\\\\"). Si no aplica, \\\\\\\"0,0\\\\\\\".\\\\n7. Total con IVA: Suma neta más IVA, sin símbolos, con coma como separador decimal (p.ej. \\\\\\\"2000,00\\\\\\\").\\\\n8. Moneda: Código de tres letras en mayúsculas (p.ej. \\\\\\\"EUR\\\\\\\", \\\\\\\"USD\\\\\\\").\\\\n9. Notas: Información adicional o aclaraciones, o \\\\\\\"N/A\\\\\\\" si no corresponde.\\\\n\\\\nRequisitos:\\\\n- Todos los campos deben contener valores; use \\\\\\\"N/A\\\\\\\" si está vacío.\\\\n- Mantener consistencia de formato.\\\\n- Seguir estrictamente el orden indicado. …\\nRequisitos:\\n- Todos los campos deben …\\n\\n**ATENCIÓN:** Devuélveme **solo** el JSON puro, **sin** comillas exteriores ni texto adicional.- Seguir estrictamente el orden indicado.\\n\\n**IMPORTANTE**:\\n– Encapsula el resultado **únicamente** en un array JSON, empezando con [ y terminando con ].\\n– Devuélveme **solo** ese array (con sus llaves y corchetes) y **nada** más: sin comillas exteriores, sin texto adicional, sin markdown, sin saltos escapados.\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0,\n    \"topK\": 1,\n    \"topP\": 0.95,\n    \"maxOutputTokens\": 1024,\n    \"responseMimeType\": \"application/json\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        80
+      ],
+      "id": "a0c35d8a-413b-4093-836d-72bd1e54658e",
+      "name": "Analizar Factura"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a55dcf43-6fc2-42cf-a75a-cfe585796281",
+              "name": "parsearVariable",
+              "value": "=a",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        80
+      ],
+      "id": "db5e1886-9178-442d-a360-13633ad1a752",
+      "name": "Parsear Variables"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1asvmN_2kJ9oeM4QIMRiASAqIPxrqS-Um4LwYYIT-quM",
+          "mode": "list",
+          "cachedResultName": "Facturas Ejemplo 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1asvmN_2kJ9oeM4QIMRiASAqIPxrqS-Um4LwYYIT-quM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1asvmN_2kJ9oeM4QIMRiASAqIPxrqS-Um4LwYYIT-quM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha de emisión": "={{ $json.parsearVariable[0]['Fecha de emisión'] }}",
+            "Categoría": "={{ $json.parsearVariable[0]['Categoría'] }}",
+            "Emisor": "={{ $json.parsearVariable[0].Emisor }}",
+            "Descripción": "={{ $json.parsearVariable[0]['Descripción'] }}",
+            "Importe Neto (sin IVA)": "={{ $json.parsearVariable[0]['Importe neto (sin IVA)'] }}",
+            "Tipo de IVA (%)": "={{ $json.parsearVariable[0]['Tipo de IVA (%)'] }}",
+            "Total con IVA": "={{ $json.parsearVariable[0]['Total con IVA'] }}",
+            "Moneda": "={{ $json.parsearVariable[0].Moneda }}",
+            "Notas": "={{ $json.parsearVariable[0].Notas }}",
+            "URL": "={{ $('Nuevo Archivo').item.json.webViewLink }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha de emisión",
+              "displayName": "Fecha de emisión",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Categoría",
+              "displayName": "Categoría",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Emisor",
+              "displayName": "Emisor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Descripción",
+              "displayName": "Descripción",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Importe Neto (sin IVA)",
+              "displayName": "Importe Neto (sin IVA)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipo de IVA (%)",
+              "displayName": "Tipo de IVA (%)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total con IVA",
+              "displayName": "Total con IVA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Moneda",
+              "displayName": "Moneda",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notas",
+              "displayName": "Notas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1024,
+        80
+      ],
+      "id": "d59c8b76-7864-4319-928f-c23ec53d536f",
+      "name": "Añadir Datos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "63RgPzTSFDrHAKRK",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Nuevo Archivo": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Descargar Archivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Archivo": {
+      "main": [
+        [
+          {
+            "node": "Convertir a base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convertir a base64": {
+      "main": [
+        [
+          {
+            "node": "Analizar Factura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analizar Factura": {
+      "main": [
+        [
+          {
+            "node": "Parsear Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear Variables": {
+      "main": [
+        [
+          {
+            "node": "Añadir Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Añadir Datos": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cf9c7767-d581-45f9-904d-3c8d5a3ecf79",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aac574544802a17aad902d42e8f7770e23d852adf6e8e0ac80531236fecac715"
+  },
+  "id": "FaH3WiDsacPQMDjt",
+  "tags": []
+}
